@@ -1,0 +1,1373 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Paisa Safar</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Pixelify+Sans:wght@500;700&display=swap">
+<style>
+/* Layout: full-bleed pixel canvas; phone and menus dock at the top (portrait) or right (landscape) so the runner stays visible */
+:root{
+  --ink:#0d0a16; --panel:#1c1533; --panel-hi:#2a2049; --edge:#4c3b7d; --text:#f5eddd; --muted:#b9add6;
+  --gold:#ffc83a; --saffron:#ff8a24; --safe:#3fd0b6; --danger:#ff5d73; --board:#f6c91c; --board-ink:#141014;
+  --f-pixel:"Pixelify Sans","Baloo 2",ui-monospace,monospace;
+  --f-body:"Baloo 2","Nirmala UI","Mangal",system-ui,sans-serif;
+  --step:polygon(0 8px,4px 8px,4px 4px,8px 4px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px));
+  --step-s:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px));
+  --dockmax:70vh;
+  color-scheme:dark;
+}
+html,body{height:100%;background:var(--ink);color:var(--text);overflow:hidden}
+body{margin:0;font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-user-select:none;user-select:none;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+#game{position:fixed;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;background:#0d0a16}
+#crt{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);opacity:.5}
+#crt[hidden]{display:none}
+#probe{position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+
+button{font:inherit;color:inherit}
+.btn{font-family:var(--f-pixel);font-weight:700;font-size:16px;letter-spacing:.02em;line-height:1.2;color:#1d1206;background:var(--gold);border:0;padding:12px 14px;min-height:48px;cursor:pointer;clip-path:var(--step-s);box-shadow:inset 0 -4px 0 rgba(0,0,0,.3),inset 0 3px 0 rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;gap:8px;width:100%;text-align:center}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:inset 0 -2px 0 rgba(0,0,0,.3),inset 0 2px 0 rgba(255,255,255,.35)}
+.btn:focus-visible{box-shadow:inset 0 0 0 3px #fff,inset 0 -4px 0 rgba(0,0,0,.3)}
+.btn.safe{background:var(--safe);color:#06201c}
+.btn.ghost{background:var(--panel-hi);color:var(--text);box-shadow:inset 0 -4px 0 rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.08)}
+.btn.ghost:focus-visible{box-shadow:inset 0 0 0 3px var(--gold)}
+.btn.small{min-height:40px;font-size:14px;padding:8px 10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(.6)}
+.btn svg{width:18px;height:18px;flex:none}
+.pulse{animation:pulse 1.1s steps(2) infinite}
+@keyframes pulse{50%{filter:brightness(1.25);transform:translateY(-1px)}}
+
+#ui{position:fixed;inset:0;pointer-events:none}
+#ui>*{pointer-events:auto}
+.icon-btn{position:relative;width:44px;height:44px;border:0;background:rgba(18,12,34,.72);clip-path:var(--step-s);display:grid;place-items:center;cursor:pointer;color:var(--text)}
+.icon-btn svg{width:22px;height:22px}
+.icon-btn:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--gold)}
+#pause-btn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:max(10px,env(safe-area-inset-right,0px))}
+
+#title-ui{position:fixed;left:0;right:0;top:var(--tui-top,46%);display:flex;flex-direction:column;align-items:center;gap:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#title-ui .tag{margin:0;font-weight:600;font-size:17px;text-align:center;max-width:30ch;text-wrap:balance;color:var(--text);text-shadow:0 2px 0 #140c1e,0 0 12px rgba(10,6,20,.8)}
+#title-ui .acts{display:flex;flex-direction:column;gap:10px;width:min(320px,100%)}
+#title-ui .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+#title-ui .fine{background:rgba(14,9,28,.74);padding:6px 10px;clip-path:var(--step-s);margin:0;font-size:13px;color:var(--text);opacity:.85;text-align:center;max-width:36ch;text-wrap:balance;text-shadow:0 1px 0 #140c1e,0 0 8px rgba(10,6,20,.9)}
+
+#panel-wrap{position:fixed;inset:0;display:flex;pointer-events:none;padding-top:calc(env(safe-area-inset-top,0px) + 62px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#panel-wrap.top{align-items:flex-start;justify-content:center}
+#panel-wrap.top .panel{max-height:var(--dockmax)}
+#panel-wrap.right{align-items:center;justify-content:flex-end}
+#panel-wrap.modal{align-items:center;justify-content:center;background:rgba(9,6,18,.62);pointer-events:auto;padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+.panel{pointer-events:auto;width:min(400px,100%);max-height:100%;overflow:auto;background:var(--panel);color:var(--text);clip-path:var(--step);box-shadow:inset 0 0 0 3px var(--edge),inset 0 7px 0 rgba(255,255,255,.05);padding:18px 16px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;animation:rise .22s steps(4)}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.panel.still{animation:none}
+.panel h2{margin:0;font-family:var(--f-pixel);font-weight:700;font-size:22px;line-height:1.15;text-wrap:balance}
+.panel h3{margin:0;font-family:var(--f-pixel);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.panel p{margin:0}
+.kicker{font-family:var(--f-pixel);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.muted{color:var(--muted)}
+.list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.list li{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start}
+.list li .n{font-family:var(--f-pixel);font-weight:700;color:#1d1206;background:var(--gold);width:24px;height:24px;display:grid;place-items:center;clip-path:var(--step-s);font-size:13px;margin-top:2px}
+
+/* Phone */
+.panel.phone{padding:0;gap:0;background:#141024}
+.ph-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 7px 16px;background:var(--app);color:#fff;font-family:var(--f-pixel);font-weight:700;font-size:14px;letter-spacing:.04em}
+.ph-bar .clock{opacity:.9;font-variant-numeric:tabular-nums}
+.ph-in{display:flex;flex-direction:column;gap:11px;padding:12px 14px 16px}
+.ph-who{display:grid;grid-template-columns:40px 1fr 44px;gap:10px;align-items:center}
+.ph-av{width:40px;height:40px;display:grid;place-items:center;font-family:var(--f-pixel);font-weight:700;font-size:18px;color:#fff;clip-path:var(--step-s)}
+.ph-id{min-width:0}
+.ph-id b{display:block;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+.ph-id small{display:block;font-size:13px;color:var(--muted);line-height:1.25}
+.ph-who .icon-btn{background:var(--panel-hi);width:40px;height:40px}
+.bubble{background:#262040;border-radius:4px 14px 14px 14px;padding:10px 12px;font-size:16px;line-height:1.45;overflow-wrap:anywhere}
+.bubble.chat{background:#1f4436}
+.bubble.channel{background:#1b3452}
+.bubble.sms{background:#2a2b3f}
+.bubble.app{background:#2f2058;border-radius:12px}
+.bubble.post{background:#3a1d38}
+.bubble.call{background:#16323a;font-style:italic}
+.bubble.video{background:#3a1a1a}
+.bubble .meta{display:block;margin-top:6px;font-size:13px;color:var(--muted);font-style:normal}
+.vid{position:relative;overflow:hidden;clip-path:var(--step-s);background:#000}
+.vid img{display:block;width:100%;image-rendering:pixelated;animation:glitch 2.4s steps(1) infinite}
+.vid .live{position:absolute;left:8px;top:6px;font-family:var(--f-pixel);font-size:12px;background:#e8402a;color:#fff;padding:1px 6px}
+@keyframes glitch{0%,100%{transform:none;filter:none}46%{transform:translateX(-3px);filter:hue-rotate(40deg) saturate(1.6)}47%{transform:translateX(4px)}48%{transform:none;filter:none}81%{transform:translateY(2px) skewX(-4deg);filter:contrast(1.4)}82%{transform:none;filter:none}}
+.call{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0 2px}
+.call .ring{width:64px;height:64px;display:grid;place-items:center;font-family:var(--f-pixel);font-size:26px;font-weight:700;background:var(--safe);color:#06201c;clip-path:var(--step);animation:pulse 1s steps(2) infinite}
+.call span{font-family:var(--f-pixel);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.urg{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center;font-family:var(--f-pixel);font-size:13px;color:#ffd0d6}
+.urg b{color:var(--danger);font-size:16px;font-variant-numeric:tabular-nums}
+.urg i{grid-column:1/-1;display:block;height:6px;background:#3a1c2c}
+.urg i em{display:block;height:100%;background:var(--danger);transition:width .25s linear}
+.mithu{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center}
+.mithu img{width:44px;height:36px;image-rendering:pixelated}
+.mithu p{background:#203a24;border-radius:12px 12px 12px 3px;padding:8px 10px;font-size:15px;line-height:1.35}
+.mithu small{display:block;font-family:var(--f-pixel);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8be59a}
+.acts{display:flex;flex-direction:column;gap:9px}
+.acts .two{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;background:#1e1838;padding:8px 10px;clip-path:var(--step-s)}
+.checks .st{width:24px;height:24px;display:grid;place-items:center;font-family:var(--f-pixel);font-weight:700;font-size:15px;clip-path:var(--step-s);margin-top:1px}
+.checks .st.scan{background:#3a3160;color:var(--gold);animation:pulse .5s steps(2) infinite}
+.checks .st.ok{background:var(--safe);color:#06201c}
+.checks .st.bad{background:var(--danger);color:#2a0710}
+.checks b{display:block;font-size:14px;line-height:1.25}
+.checks span{display:block;font-size:14px;line-height:1.4;color:#e3dbf2}
+.verdict{display:flex;align-items:center;gap:10px;padding:10px 12px;clip-path:var(--step-s);font-family:var(--f-pixel);font-weight:700;font-size:17px;line-height:1.2}
+.verdict.good{background:var(--safe);color:#06201c}
+.verdict.bad{background:var(--danger);color:#2a0710}
+.verdict.mid{background:var(--gold);color:#1d1206}
+.verdict svg{width:22px;height:22px;flex:none}
+.btn.safe .in,.verdict.good .in{fill:var(--safe)}.verdict.bad .in{fill:var(--danger)}.verdict.mid .in{fill:var(--gold)}
+.delta{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-pixel);font-weight:500;font-size:13px;padding:3px 8px;background:var(--panel-hi);clip-path:var(--step-s);font-variant-numeric:tabular-nums}
+.chip.neg{color:#ffb3bf}
+.chip.pos{color:#9ff0df}
+.flags{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.flags li{font-size:14px;line-height:1.3;padding:5px 9px;background:#3a1c2c;color:#ffd6dc;clip-path:var(--step-s)}
+.flags.good li{background:#123832;color:#c8fff2}
+.note{font-size:15px;color:#e8e0f6}
+.real{font-size:14px;color:var(--muted);border-top:2px dashed #3a2f5c;padding-top:10px}
+.real b{color:var(--text)}
+
+/* Station stop */
+.board{background:var(--board);color:var(--board-ink);clip-path:var(--step-s);box-shadow:inset 0 0 0 3px var(--board-ink),inset 0 0 0 5px var(--board);padding:10px 12px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0}
+.board .hi{font-family:var(--f-body);font-weight:800;font-size:26px;line-height:1.1}
+.board .en{font-family:var(--f-pixel);font-weight:700;font-size:24px;letter-spacing:.12em;line-height:1.1}
+.choices{display:flex;flex-direction:column;gap:9px}
+.choice{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;text-align:left;border:0;background:var(--panel-hi);padding:11px 12px;cursor:pointer;clip-path:var(--step-s);box-shadow:inset 0 -4px 0 rgba(0,0,0,.35)}
+.choice:hover{background:#352a5c}
+.choice:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--gold)}
+.choice:active{transform:translateY(2px)}
+.choice[disabled]{opacity:.45;cursor:not-allowed}
+.choice b{font-family:var(--f-pixel);font-weight:700;font-size:16px;line-height:1.2}
+.choice span{grid-column:1;font-size:14px;line-height:1.35;color:var(--muted)}
+.choice .fx{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-style:normal}
+.choice .fx i{font-style:normal;font-family:var(--f-pixel);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pos{color:#9ff0df}.neg{color:#ffb3bf}
+
+/* End */
+.score-big{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.score-big b{font-family:var(--f-pixel);font-weight:700;font-size:44px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
+.rank{font-family:var(--f-pixel);font-weight:700;font-size:15px;padding:4px 10px;background:var(--safe);color:#06201c;clip-path:var(--step-s)}
+.tbl{display:flex;flex-direction:column;gap:2px;margin:0}
+.tbl div{display:flex;justify-content:space-between;gap:12px;padding:6px 2px;border-bottom:1px solid #2e2550;font-size:15px}
+.tbl dt{color:#e8e0f6}
+.tbl dd{margin:0;font-family:var(--f-pixel);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl .tot{border-bottom:0;padding-top:8px}
+.tbl .tot dd{color:var(--gold);font-size:18px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stat{background:var(--panel-hi);padding:9px 10px;clip-path:var(--step-s);min-width:0}
+.stat b{display:block;font-family:var(--f-pixel);font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:13px;line-height:1.3;color:var(--muted)}
+details.q{background:#1e1838;clip-path:var(--step-s);padding:9px 11px}
+details.q summary{cursor:pointer;font-size:15px;line-height:1.35;list-style:none}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::after{content:" +";font-family:var(--f-pixel);color:var(--gold)}
+details.q[open] summary::after{content:" −"}
+details.q p{margin-top:6px;font-size:14px;color:#c8fff2}
+.help{background:#123832;color:#d6fff6;padding:10px 12px;clip-path:var(--step-s);font-size:15px}
+.help b{color:#fff}
+.help a{color:#9ff0df}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg .btn[aria-pressed="true"]{background:var(--gold);color:#1d1206}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);background:var(--panel);box-shadow:inset 0 0 0 3px var(--edge);clip-path:var(--step-s);padding:8px 14px;font-family:var(--f-pixel);font-size:14px;pointer-events:none}
+.rmap{display:flex;flex-direction:column}
+.stn{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;text-align:left;border:0;background:transparent;padding:6px 4px 16px;position:relative;cursor:pointer;width:100%}
+.stn:not(:last-child)::after{content:"";position:absolute;left:26px;top:54px;bottom:0;width:4px;background:repeating-linear-gradient(to bottom,#6a5a9a 0 6px,#2e2550 6px 10px)}
+.stn .pin{width:44px;height:44px;display:grid;place-items:center;font-family:var(--f-pixel);font-weight:700;font-size:20px;clip-path:var(--step);background:#4a4560;color:#b0aac6}
+.stn.done .pin{background:var(--gold);color:#1d1206}
+.stn.cur .pin{background:var(--saffron);color:#1d1206;animation:pulse 1.1s steps(2) infinite}
+.stn.lock{cursor:not-allowed;opacity:.75}
+.stn:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--gold)}
+.stn b{display:block;font-family:var(--f-pixel);font-size:16px;line-height:1.2}
+.stn small{display:block;font-size:13px;line-height:1.35;color:var(--muted)}
+.stars,.starsbig{font-style:normal;color:var(--gold);letter-spacing:.1em}.stars{display:block;font-size:16px}.starsbig{font-size:34px;line-height:1;letter-spacing:.12em}
+.stars i,.starsbig i{font-style:normal;color:#4a4560}
+html[lang=hi] .panel *,html[lang=hi] .btn{letter-spacing:0!important;text-transform:none!important}
+@media (prefers-reduced-motion: reduce){.pulse,.call .ring,.vid img,.checks .st.scan,.panel{animation:none}}
+</style>
+
+<canvas id="game" aria-label="Paisa Safar game. Tap or press Space to jump."></canvas>
+<div id="crt"></div>
+<div id="probe"></div>
+<div id="ui">
+  <div id="title-ui" hidden>
+    <p class="tag" id="t-tag"></p>
+    <div class="acts">
+      <button class="btn" id="b-start"></button>
+      <div class="row">
+        <button class="btn ghost small" id="b-how"></button>
+        <button class="btn ghost small" id="b-lang">EN / हिं</button>
+        <button class="btn ghost small" id="b-sound"></button>
+      </div>
+    </div>
+    <p class="fine" id="t-fine"></p>
+  </div>
+  <button class="icon-btn" id="pause-btn" hidden aria-label="Pause"></button>
+</div>
+<div id="panel-wrap" hidden></div>
+
+<script>
+(()=>{
+"use strict";
+/* =====================================================================
+   PAISA SAFAR · prototype with 4 levels (scams, F&O, mutual funds, fundamentals)
+   Original pixel art, drawn in code. All people, brands, apps and coins
+   are fictional. No data leaves the device.
+   ===================================================================== */
+
+/* ---------- utils ---------- */
+const clamp=(v,a,b)=>v<a?a:v>b?b:v, lerp=(a,b,t)=>a+(b-a)*t;
+const H2R={};
+function hex2rgb(h){let r=H2R[h];if(r)return r;const s=h.replace('#','');r=[parseInt(s.substr(0,2),16),parseInt(s.substr(2,2),16),parseInt(s.substr(4,2),16)];H2R[h]=r;return r}
+function rgb2hex(r,g,b){return '#'+[r,g,b].map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('')}
+function mix(a,b,t){const A=hex2rgb(a),B=hex2rgb(b);return rgb2hex(lerp(A[0],B[0],t),lerp(A[1],B[1],t),lerp(A[2],B[2],t))}
+function shade(c,amt){return amt>=0?mix(c,'#fff6e0',amt):mix(c,'#140c26',-amt)}
+function rgba(h,a){const c=hex2rgb(h);return `rgba(${c[0]},${c[1]},${c[2]},${a})`}
+function mulberry(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let RNG=mulberry(Date.now()&0xffffffff);
+const rnd=()=>RNG(), rr=(a,b)=>a+(b-a)*RNG(), ri=(a,b)=>Math.floor(rr(a,b+1));
+const pick=(a,r)=>a[((r||RNG)()*a.length)|0];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=RNG()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function hash(n){n=(n<<13)^n;return 1-((n*(n*n*15731+789221)+1376312589)&0x7fffffff)/1073741824}
+function vnoise(x){const i=Math.floor(x),f=x-i,u=f*f*(3-2*f);return lerp(hash(i),hash(i+1),u)}
+const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store={get(k,d){try{const v=localStorage.getItem('paisa-safar:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('paisa-safar:'+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- bitmap font (3x5) ---------- */
+const GL={A:'010101111101101',B:'110101110101110',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',J:'001001001101010',K:'101101110101101',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',W:'101101111111101',X:'101101010101101',Y:'101101010010010',Z:'111001010100111','0':'111101101101111','1':'010110010010111','2':'110001010100111','3':'110001010001110','4':'101101111001001','5':'111100110001110','6':'011100111101111','7':'111001010010010','8':'111101111101111','9':'111101111001110',':':'000010000010000','.':'000000000000010',',':'000000000010100','+':'000010111010000','-':'000000111000000','!':'010010010000010','?':'110001010000010','/':'001001010100100','%':'101001010100101','>':'100010001010100','<':'001010100010001',"'":'010010000000000','(':'010100100100010',')':'010001001001010'};
+function drawText(c,s,x,y,col,k=1){s=String(s).toUpperCase();c.fillStyle=col;let cx=x;for(const ch of s){const g=GL[ch];if(g){for(let i=0;i<15;i++)if(g.charCodeAt(i)===49)c.fillRect(cx+(i%3)*k,y+((i/3)|0)*k,k,k)}cx+=4*k}}
+const textW=(s,k=1)=>Math.max(0,String(s).length*4-1)*k;
+function text(c,s,x,y,col,k=1,align='l',sh='#0b0714'){const w=textW(s,k);x=Math.round(align==='c'?x-w/2:align==='r'?x-w:x);y=Math.round(y);if(sh){drawText(c,s,x,y+k,sh,k);drawText(c,s,x+k,y+k,sh,k)}drawText(c,s,x,y,col,k)}
+
+/* ---------- sprite tools ---------- */
+const OUTLINE='#140c1e';
+function canvas(w,h){const c=document.createElement('canvas');c.width=Math.max(1,w);c.height=Math.max(1,h);return c}
+function bake(rows,pal){const h=rows.length,w=Math.max(...rows.map(r=>r.length));const c=canvas(w,h),x=c.getContext('2d');for(let y=0;y<h;y++)for(let i=0;i<rows[y].length;i++){const ch=rows[y][i];if(ch==='.'||!pal[ch])continue;x.fillStyle=pal[ch];x.fillRect(i,y,1,1)}return c}
+function flip(src){const c=canvas(src.width,src.height),x=c.getContext('2d');x.translate(src.width,0);x.scale(-1,1);x.drawImage(src,0,0);return c}
+function tinted(src,col,a){const c=canvas(src.width,src.height),x=c.getContext('2d');x.drawImage(src,0,0);x.globalCompositeOperation='source-atop';x.globalAlpha=a;x.fillStyle=col;x.fillRect(0,0,c.width,c.height);return c}
+function mkSprite(w,h,fn,opt={}){
+  const pad=1,c=canvas(w+2,h+2),x=c.getContext('2d');const lights=[],meta={};
+  const P={w,h,meta,
+    r(a,b,cw,ch,col){cw=Math.round(cw);ch=Math.round(ch);if(cw<=0||ch<=0)return;x.fillStyle=col;x.fillRect(Math.round(a)+pad,Math.round(b)+pad,cw,ch)},
+    p(a,b,col){x.fillStyle=col;x.fillRect(Math.round(a)+pad,Math.round(b)+pad,1,1)},
+    ell(cx,cy,rx,ry,col){x.fillStyle=col;for(let j=-ry;j<=ry;j++){const k=Math.sqrt(Math.max(0,1-(j*j)/(ry*ry+.35)))*(rx+.45);const xx=Math.round(cx-k),ww=Math.round(cx+k)-xx;if(ww>0)x.fillRect(xx+pad,Math.round(cy+j)+pad,ww,1)}},
+    txt(s,a,b,col,k=1){drawText(x,s,a+pad,b+pad,col,k)},
+    ctx:x};
+  const L={win(a,b,cw,ch,col){lights.push([a,b,cw,ch,col||pick(['#ffd27a','#ffc35a','#ffe39a','#ffb04a','#ffe7c0'])])}};
+  fn(P,L);
+  if(opt.shade!==false||opt.outline!==null){
+    const W=c.width,H=c.height,id=x.getImageData(0,0,W,H),d=id.data,a=new Uint8Array(W*H);
+    for(let i=0;i<W*H;i++)a[i]=d[i*4+3]>0?1:0;
+    if(opt.shade!==false){for(let yy=0;yy<H;yy++)for(let xx=0;xx<W;xx++){const i=yy*W+xx;if(!a[i])continue;const up=yy>0&&a[i-W],dn=yy<H-1&&a[i+W],lf=xx>0&&a[i-1],rt=xx<W-1&&a[i+1];let f=0;if(!up)f=.26;else if(!dn)f=-.3;else if(!lf)f=.09;else if(!rt)f=-.12;if(f){const o=i*4,t=Math.abs(f),T=f>0?[255,246,224]:[24,14,44];d[o]=lerp(d[o],T[0],t);d[o+1]=lerp(d[o+1],T[1],t);d[o+2]=lerp(d[o+2],T[2],t)}}}
+    if(opt.outline!==null){const oc=hex2rgb(opt.outline||OUTLINE);for(let yy=0;yy<H;yy++)for(let xx=0;xx<W;xx++){const i=yy*W+xx;if(a[i])continue;if((xx>0&&a[i-1])||(xx<W-1&&a[i+1])||(yy>0&&a[i-W])||(yy<H-1&&a[i+W])){const o=i*4;d[o]=oc[0];d[o+1]=oc[1];d[o+2]=oc[2];d[o+3]=255}}}
+    x.putImageData(id,0,0);
+  }
+  let lc=null;if(lights.length){lc=canvas(c.width,c.height);const lx=lc.getContext('2d');for(const[a,b,cw,ch,col]of lights){lx.fillStyle=col;lx.fillRect(a+pad,b+pad,cw,ch)}}
+  return {img:c,light:lc,w:c.width,h:c.height,meta};
+}
+function pixLine(c,x0,y0,x1,y1,col){x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx+dy;c.fillStyle=col;for(let n=0;n<600;n++){c.fillRect(x0,y0,1,1);if(x0===x1&&y0===y1)break;const e2=2*e;if(e2>=dy){e+=dy;x0+=sx}if(e2<=dx){e+=dx;y0+=sy}}}
+function hiSprite(str,px,col,outline){const m=canvas(4,4).getContext('2d');const font=`800 ${px}px "Baloo 2","Noto Sans Devanagari","Nirmala UI","Mangal",sans-serif`;m.font=font;const w=Math.ceil(m.measureText(str).width)+6,h=Math.ceil(px*1.7);const c=canvas(w,h),x=c.getContext('2d');x.font=font;x.fillStyle='#000';x.textBaseline='alphabetic';x.fillText(str,3,Math.round(px*1.22));const id=x.getImageData(0,0,w,h),d=id.data,cc=hex2rgb(col),a=new Uint8Array(w*h);for(let i=0;i<w*h;i++){a[i]=d[i*4+3]>110?1:0;d[i*4]=cc[0];d[i*4+1]=cc[1];d[i*4+2]=cc[2];d[i*4+3]=a[i]?255:0}if(outline){const oc=hex2rgb(outline);for(let y=0;y<h;y++)for(let xx=0;xx<w;xx++){const i=y*w+xx;if(a[i])continue;if((xx>0&&a[i-1])||(xx<w-1&&a[i+1])||(y>0&&a[i-w])||(y<h-1&&a[i+w])||(y>1&&a[i-2*w])===1){const o=i*4;d[o]=oc[0];d[o+1]=oc[1];d[o+2]=oc[2];d[o+3]=255}}}x.putImageData(id,0,0);return c}
+
+/* ---------- character sprites ---------- */
+const HERO_PAL={o:'#1a1226',h:'#2b1b19',s:'#c98a5a',S:'#94603c',e:'#1a1226',t:'#2fa39a',T:'#1d6c6a',l:'#7fe0cf',b:'#f08a2c',B:'#a9531a',j:'#3d5498',J:'#26346a',w:'#efe7da'};
+const HERO_TOP=["....oooooo....","...ohhhhhhho..","..ohhhhhhhhho.","..ohhhhhsssso.","..ohhhsssseso.","..ohhSsssssso.","...ohSssssso..","....oSSsso....","..obbottttlo..",".obbbotttttlo.",".oBbbotTtttso.",".oBbbotTttsso.",".oBBbotTtttlo.","..ooootTTTTo.."];
+const HERO_LEGS={
+ idle:["....ojjjjjo...","....ojjJjjo...","....ojjoJjjo..","....ojjoJjjo..","....owwoowwo..","....oooooooo.."],
+ a:["....ojjjjjo...","...ojjjoJjjo..","..ojjjo..oJjo.",".owwjo....oJjo",".owwo.....owwo","..oo.......oo."],
+ b:["....ojjjjjo...","....ojjJjjo...",".....ojJjo....",".....ojJjo....",".....owwwo....",".....ooooo...."],
+ c:["....ojjjjjo...","...ojJjoojjo..","..oJjo...ojjjo",".oJjo.....owwo",".owwo......oo.","..oo.........."],
+ jump:["....ojjjjjo...","...ojjjjjjjo..","..owwoo.ojjo..","..ooo...owwo..","........ooo...",".............."]};
+const HERO={};for(const k in HERO_LEGS)HERO[k]=bake(HERO_TOP.concat(HERO_LEGS[k]),HERO_PAL);
+const MITHU_PAL={o:'#12301a',g:'#45d05a',G:'#23863a',y:'#ffd23f',r:'#e8402a',e:'#101010'};
+const MITHU=[bake(["....ooo...","...oggeoo.","oo.oggggrr","oGooggggro","ogGGgggyo.",".oGGGgggo.","..ooogGGo.","....oGGo.."],MITHU_PAL),bake(["....ooo...","...oggeoo.","...oggggrr","..oGggggro",".oGGGggyo.","oGGGGggo..","oGooogGGo.","....oGGo.."],MITHU_PAL)];
+const COIN_PAL={o:'#5a3a08',y:'#ffd23f',Y:'#d9951a',w:'#fff7c2'};
+const COIN=[bake(["..ooo..",".oyyyo.","oywyyYo","oyyYyYo","oyyyyYo",".oYYYo.","..ooo.."],COIN_PAL),bake(["..ooo..",".owyyo.",".oyyYo.",".oyyYo.",".oyyYo.",".oyYYo.","..ooo.."],COIN_PAL),bake(["...o...","..oyo..","..oYo..","..oYo..","..oYo..","..oyo..","...o..."],COIN_PAL)];
+const COINF=[0,1,2,1];
+const PHONE=bake([".ooooo.","okkkkko","oksssko","okswsko","oksssko","oksssko","okkkkko","okkwkko",".ooooo."],{o:'#120c1c',k:'#2b2540',s:'#7fe0cf',w:'#ffffff'});
+const SHIELD=bake(["ooooooo","oltttto","oltttto","ottttto",".ottto.","..oto..","...o..."],{o:'#0d2a26',t:'#3fd0b6',l:'#b7fff1'});
+const CLOCKI=bake([".ooooo.","owwwwwo","owwkwwo","owwkkwo","owwwwwo","owwwwwo",".ooooo."],{o:'#2a1f4a',w:'#f5eddd',k:'#2a1f4a'});
+
+/* person builder: faces right, mirrored for NPCs facing the hero */
+function person(P,o,dy=0){
+  const r=(a,b,w,h,c)=>P.r(a,b+dy,w,h,c),p=(a,b,c)=>P.p(a,b+dy,c);
+  const sk=o.skin||'#b97a4e';
+  r(4,16,3,6,o.pants);r(8,16,3,6,o.pants);r(3,22,4,2,o.shoes);r(8,22,4,2,o.shoes);
+  r(3,8,9,9,o.shirt);r(2,9,2,7,o.sleeve||o.shirt);r(2,16,2,1,sk);
+  r(11,9,2,4,o.sleeve||o.shirt);r(12,12,2,2,sk);
+  if(!o.nophone){r(12,9,2,3,'#22223a');p(12,10,'#8ff7ff')}
+  r(6,6,3,2,sk);r(4,0,7,7,sk);
+  r(4,0,7,2,o.hair);r(4,2,2,2,o.hair);
+  p(9,3,'#1a1226');
+  if(o.extra)o.extra({r,p});
+}
+const NPCDEF={
+ guru:{skin:'#b0703f',hair:'#16100e',shirt:'#d6337a',pants:'#e8e2d2',shoes:'#7a4a22',extra:({r,p})=>{for(let y=9;y<16;y+=2)for(let x=4;x<11;x+=3)p(x+(y%4?1:0),y,'#ffd23f');r(6,3,5,1,'#0a0a10');p(10,3,'#7fd4ff');r(8,5,3,1,'#16100e');p(6,8,'#ffd23f');p(7,9,'#ffd23f');p(8,9,'#ffd23f');p(9,8,'#ffd23f')}},
+ influencer:{skin:'#c98a5a',hair:'#2b1b19',shirt:'#7b4bd6',sleeve:'#5d35ad',pants:'#2b2b3a',shoes:'#f4f4f4',extra:({r,p})=>{r(4,0,7,2,'#e8402a');r(9,1,3,1,'#b42d1d');r(5,10,5,1,'#5d35ad');p(7,12,'#ffd23f')}},
+ officer:{skin:'#a8693c',hair:'#1e1410',shirt:'#2d3a66',pants:'#232c4f',shoes:'#140e1c',extra:({r,p})=>{r(6,8,3,2,'#f0f0f0');r(7,9,1,5,'#c23a3a');r(4,11,2,2,'#f4f4f4');p(5,10,'#3fd0b6');p(4,9,'#3fd0b6');r(0,15,3,3,'#6b3f1d');p(1,14,'#6b3f1d')}},
+ cousin:{skin:'#c98a5a',hair:'#16100e',shirt:'#f2b632',pants:'#ece6d6',shoes:'#c23a3a',extra:({r,p})=>{r(3,8,9,10,'#f2b632');r(3,0,3,11,'#16100e');p(8,2,'#e8402a');for(let i=0;i<8;i++)p(3+i,8+i,'#e8508a'),p(4+i,8+i,'#e8508a');p(2,15,'#ffd23f');p(13,13,'#ffd23f')}},
+ courier:{skin:'#9a5f36',hair:'#1e1410',shirt:'#8a5a2f',pants:'#4a3a2a',shoes:'#1e1410',extra:({r,p})=>{r(4,0,7,2,'#5b3a1d');r(9,1,3,1,'#3e2712');for(let i=0;i<7;i++)p(4+i,9+i,'#3a2412');r(1,13,4,4,'#5b3a1d');p(2,14,'#ffd23f')}},
+ thug:{skin:'#5a3a2a',hair:'#1c1a24',shirt:'#1c1a24',sleeve:'#26232f',pants:'#15131b',shoes:'#0d0b12',extra:({r,p})=>{r(3,0,8,8,'#1c1a24');r(6,2,5,5,'#2c2026');p(8,3,'#ff3b3b');p(9,3,'#ff3b3b');r(6,5,5,2,'#0d0d12');r(0,12,4,6,'#7a5a2a');p(1,14,'#ffd23f');p(2,15,'#ffd23f')}},
+ porter:{skin:'#8a5530',hair:'#1e1410',shirt:'#c8302a',pants:'#ece6d6',shoes:'#5a3a1a',nophone:true,extra:({r,p})=>{r(3,-4,9,4,'#3b5ea8');r(5,-5,5,1,'#2a2424');r(3,-2,9,1,'#2a4580');p(2,9,'#c8302a');r(2,8,2,1,'#8a5530');r(11,8,2,1,'#8a5530');r(4,1,7,1,'#ece6d6')}},
+ chaiwala:{skin:'#9a5f36',hair:'#2b1b19',shirt:'#ece6d6',pants:'#3a6a8a',shoes:'#5a3a1a',nophone:true,extra:({r,p})=>{for(let y=17;y<22;y+=2)r(4,y,7,1,'#2a4a6a');r(12,11,3,3,'#c9ccd6');p(14,10,'#c9ccd6');r(0,13,3,2,'#f2e6c8');p(0,12,'#a0522d')}},
+ reader:{skin:'#b0703f',hair:'#d8d8d8',shirt:'#6a8a5a',pants:'#5a4a3a',shoes:'#2a2018',nophone:true,extra:({r,p})=>{r(8,4,6,9,'#efe9da');r(9,6,4,1,'#8a8a8a');r(9,8,4,1,'#8a8a8a');r(9,10,3,1,'#8a8a8a')}},
+ student:{skin:'#c98a5a',hair:'#16100e',shirt:'#e85a4a',pants:'#3d5498',shoes:'#efe7da',extra:({r,p})=>{r(0,9,3,6,'#3fb6a8')}}
+};
+const NPC={};
+for(const k in NPCDEF){const tall=k==='porter';const s=mkSprite(15,tall?28:24,P=>person(P,NPCDEF[k],tall?4:0));NPC[k]={r:s.img,l:flip(s.img),w:s.w,h:s.h}}
+NPC.deepfake={r:tinted(NPC.officer.r,'#57e6ff',.45),l:tinted(NPC.officer.l,'#57e6ff',.45),w:NPC.officer.w,h:NPC.officer.h};
+const DF_R=tinted(NPC.deepfake.l,'#ff3b6b',.6),DF_B=tinted(NPC.deepfake.l,'#3b9bff',.6);
+
+/* ---------- obstacles ---------- */
+const OBS={
+ cow:mkSprite(22,15,P=>{const c='#ece4d6',pt='#6b4f3e';[[6,10],[9,10],[15,10],[18,10]].forEach(([x,y])=>{P.r(x,y,2,4,'#d8cfbe');P.r(x,14,2,1,'#3a2a24')});P.r(5,3,16,8,c);P.r(6,1,5,3,c);P.r(12,4,4,3,pt);P.r(17,6,3,3,pt);P.r(8,8,3,2,pt);P.r(0,3,6,5,c);P.r(0,6,3,2,'#e7a3a0');P.p(0,6,'#b56a6a');P.p(2,4,'#1a1226');P.p(1,1,'#d8bf86');P.p(1,2,'#d8bf86');P.p(4,1,'#d8bf86');P.p(4,2,'#d8bf86');P.r(5,4,1,2,'#cfc5b2');[[5,8,'#ff8a1a'],[6,9,'#ffd23f'],[7,9,'#ff8a1a'],[5,9,'#ffd23f'],[6,10,'#ff8a1a'],[4,8,'#ffd23f']].forEach(a=>P.p(a[0],a[1],a[2]));P.r(21,4,1,6,'#cfc5b2');P.r(20,10,2,2,'#5a4a3a')}),
+ dog:mkSprite(16,7,P=>{P.r(3,2,11,4,'#c98b4f');P.r(4,5,9,1,'#e0b07a');P.r(0,1,5,4,'#c98b4f');P.r(1,0,2,1,'#8a5a2f');P.p(0,3,'#3a2414');P.p(2,2,'#3a2414');P.r(14,4,2,1,'#c98b4f');P.r(0,5,3,1,'#e0b07a')}),
+ bags:mkSprite(12,13,P=>{P.r(0,6,12,7,'#3b5ea8');P.r(0,9,12,1,'#2a4580');P.r(2,1,8,5,'#c4473b');P.r(2,3,8,1,'#9a3028');P.r(4,0,4,1,'#3a2424');P.p(9,7,'#ffd23f');P.p(10,8,'#ffd23f')}),
+ trolley:mkSprite(26,12,P=>{P.ell(6,5,5,4,'#c9b27a');P.ell(14,4,5,4,'#bfa66a');P.ell(21,6,4,3,'#c9b27a');P.r(5,2,1,6,'#8a7340');P.r(14,1,1,6,'#8a7340');P.r(0,9,26,2,'#5a5f6b');P.ell(4,11,1,1,'#22202a');P.ell(21,11,1,1,'#22202a');P.r(0,3,1,6,'#4a4a56')})
+};
+const OBDEF={cow:{hb:[3,3,18,13]},dog:{hb:[2,2,13,6]},bags:{hb:[1,2,11,12]},trolley:{hb:[2,3,23,10]},hole:{hb:[0,0,16,4]}};
+
+/* ---------- world themes ---------- */
+const THEMES={
+ temple:{walls:['#ead3a6','#d9a066','#efe2c8','#e7b98a','#f0c9a0','#e9b5a0'],trims:['#8a4b2a','#5d7a3a','#3d6b8a','#7a2f3a'],ground:'#a48a6e',edge:'#7a6450',mid:['house','temple','house','haveli','house','temple'],far:['spire','spire','tank','tree','tree','mtower'],near:['tree','wall','pole','kiosk','tree','pole']},
+ market:{walls:['#e66a8a','#3fb6a8','#f2c14e','#7d8fe0','#ef8a4a','#9ad27a','#c78ad6'],trims:['#2b2d4a','#f4efe2','#2a5a3a','#7a2f3a'],ground:'#8c8a86',edge:'#5f5a62',mid:['shop','shop','house','shop','house'],far:['tank','tree','block','mtower','block','spire'],near:['pole','auto','wall','tree','kiosk','pole']},
+ dome:{walls:['#efe6d6','#e8c9b0','#d9b7d6','#f0d9a8'],trims:['#7a2f3a','#2f5a6a','#8a4b2a'],ground:'#a69a8a',edge:'#766a60',mid:['domeb','haveli','house','domeb','house'],far:['dome2','minar','tree','tank','dome2'],near:['tree','wall','pole','kiosk','tree']},
+ fort:{walls:['#c96a4a','#d98a5a','#e3a27a','#e9b88a'],trims:['#6a2a1a','#3d6b8a','#f0dcc0'],ground:'#b08a6a',edge:'#7a5a44',mid:['haveli','house','fortwall','haveli','house'],far:['fort','tree','spire','tank'],near:['tree','wall','pole','auto','tree']},
+ metro:{walls:['#9fb3c8','#c8d3dd','#8a9bb0','#e0c9a6','#b6a6c8'],trims:['#2b2d4a','#f4efe2','#3a4a5a'],ground:'#8a8790',edge:'#5a5862',mid:['tower','house','tower','tower','shop'],far:['tower','tower','bridge','tower','block'],near:['palm','pole','wall','palm','auto']}
+};
+const TOWNS={
+ bodhgaya:{en:'BODH GAYA',hi:'बोधगया',theme:'temple'},varanasi:{en:'VARANASI',hi:'वाराणसी',theme:'temple'},patna:{en:'PATNA',hi:'पटना',theme:'market'},
+ lucknow:{en:'LUCKNOW',hi:'लखनऊ',theme:'dome'},prayagraj:{en:'PRAYAGRAJ',hi:'प्रयागराज',theme:'temple'},jhansi:{en:'JHANSI',hi:'झाँसी',theme:'fort'},
+ bhopal:{en:'BHOPAL',hi:'भोपाल',theme:'dome'},jaipur:{en:'JAIPUR',hi:'जयपुर',theme:'fort'},nagpur:{en:'NAGPUR',hi:'नागपुर',theme:'market'},
+ indore:{en:'INDORE',hi:'इंदौर',theme:'market'},mumbai:{en:'MUMBAI',hi:'मुंबई',theme:'metro'},
+ jamtara:{en:'JAMTARA',hi:'जामताड़ा',theme:'market',rep:{en:"Phishing and OTP/KYC-style fraud calls reported",hi:"फ़िशिंग और OTP/KYC जैसी ठगी वाली कॉल की रिपोर्ट"}},
+ deoghar:{en:'DEOGHAR',hi:'देवघर',theme:'temple',rep:{en:"Phishing links and fake customer-care or scheme calls reported",hi:"फ़िशिंग लिंक और नकली कस्टमर-केयर या योजना वाली कॉल की रिपोर्ट"}},
+ nuh:{en:'NUH / MEWAT',hi:'नूँह / मेवात',theme:'market',rep:{en:"Fake online listings, including fake “army officer” sellers, reported",hi:"नकली ऑनलाइन लिस्टिंग, जिनमें नकली “सेना अधिकारी” विक्रेता भी हैं, की रिपोर्ट"}},
+ bharatpur:{en:'BHARATPUR',hi:'भरतपुर',theme:'fort',rep:{en:"Online marketplace fraud and voice phishing posing as officials reported",hi:"ऑनलाइन मार्केटप्लेस ठगी और अधिकारी बनकर वॉइस फ़िशिंग की रिपोर्ट"}},
+ kolkata:{en:'KOLKATA',hi:'कोलकाता',theme:'metro',rep:{en:"Fake call centres reported",hi:"नकली कॉल सेंटरों की रिपोर्ट"}},
+ delhi:{en:'DELHI',hi:'दिल्ली',theme:'dome',rep:{en:"Loan-app, job and investment fraud reported",hi:"लोन-ऐप, नौकरी और निवेश धोखाधड़ी की रिपोर्ट"}},
+ gullakpur:{en:'GULLAKPUR',hi:'गुल्लकपुर',theme:'market'},motiganj:{en:'MOTIGANJ',hi:'मोतीगंज',theme:'temple'},sahkarpur:{en:'SAHKARPUR',hi:'सहकारपुर',theme:'market'},dhanpur:{en:'DHANPUR',hi:'धनपुर',theme:'fort'},
+ kesarpur:{en:'KESARPUR',hi:'केसरपुर',theme:'dome'},chandanpur:{en:'CHANDANPUR',hi:'चंदनपुर',theme:'temple'},heerapur:{en:'HEERAPUR',hi:'हीरापुर',theme:'metro'}};
+const MIDTOWNS=['varanasi','patna','lucknow','prayagraj','jhansi','bhopal','jaipur','nagpur','indore'];
+const WALLADS=['MITHAI','CHAI 10','XEROX','TIFFIN','3X IN 7 DAYS?','VERIFY FIRST','1930 HELPLINE','TAILOR','BOOKS','SAVDHAAN!'];
+const SHOPS=['SWEETS','MOBILE','KIRANA','CHAI','BOOKS','TIFFIN','TAILOR','XEROX','PAAN','DOSA'];
+
+/* ---------- building & prop generators ---------- */
+function wallStains(P,w,y0,h,col){for(let i=0;i<w*h*.05;i++)P.p(rnd()*w|0,y0+(rnd()*h|0),shade(col,rnd()<.5?-.08:.05))}
+function windowAt(P,L,x,y,trim,lit){P.r(x-1,y-1,8,10,trim);P.r(x,y,6,8,'#24203a');P.r(x,y,6,1,'#3c3760');if(rnd()<.4)P.r(x,y,2,8,shade(trim,.18));P.r(x+3,y,1,8,trim);if(lit)L.win(x,y+1,6,7)}
+function roofBits(P,w){if(rnd()<.7){const tx=2+(rnd()*Math.max(1,w-10)|0);P.r(tx,0,6,6,'#26262e');P.r(tx,1,6,1,'#3d3d4a');P.r(tx+1,0,1,6,'#3d3d4a')}if(rnd()<.35){const dx=w-7;P.r(dx,2,4,3,'#d8d8de');P.p(dx+1,1,'#d8d8de');P.p(dx+4,4,'#8a8a92')}}
+function genHouse(th,shop){
+  const w=26+ri(0,26),floors=2+ri(0,2),top=7,h=top+floors*15+4;
+  return mkSprite(w,h,(P,L)=>{
+    const wall=pick(th.walls),trim=pick(th.trims);
+    P.r(0,top,w,h-top,wall);P.r(0,top,w,2,shade(wall,-.2));wallStains(P,w,top+2,h-top-2,wall);roofBits(P,w);
+    for(let f=0;f<floors;f++){const y=top+4+f*15,ground=f===floors-1;
+      if(ground&&shop){const aw=pick(['#e8402a','#2f8fd8','#3fb36a','#f2c14e']);P.r(0,y-1,w,4,'#f4efe2');for(let x=0;x<w;x+=4)P.r(x,y-1,2,4,aw);P.r(1,y+3,w-2,11,'#3a3248');for(let yy=y+4;yy<y+14;yy+=2)P.r(1,yy,w-2,1,'#4a4258');P.r(3,y+8,w-6,6,'#2a2238');for(let i=0;i<w/3;i++)P.p(4+rnd()*(w-8),y+9+rnd()*4,pick(['#ffd23f','#e8402a','#3fd0b6','#f4efe2']));L.win(3,y+8,w-6,6,'#ffe0a0');const sg=pick(SHOPS);if(textW(sg)<w-4){P.r(1,y-9,w-2,7,pick(['#f4efe2','#ffd23f','#2a2a4a']));P.txt(sg,(w-textW(sg))/2|0,y-8,'#c23a3a')}continue}
+      if(ground){const dx=(w/2|0)-3;P.r(dx,y+2,6,11,trim);P.r(dx+1,y+3,4,10,shade(trim,-.35));if(rnd()<.6)L.win(dx+1,y+4,4,9,'#ffb15a')}
+      const n=Math.max(1,(w-4)/10|0),gap=(w-n*6)/(n+1);
+      for(let i=0;i<n;i++){const x=Math.round(gap+i*(6+gap));if(ground&&Math.abs(x+3-w/2)<7)continue;windowAt(P,L,x,y+2,trim,rnd()<.5)}
+      if(!ground&&rnd()<.55){P.r(1,y+11,w-2,1,trim);for(let x=2;x<w-2;x+=2)P.p(x,y+12,trim);P.r(1,y+13,w-2,1,trim);for(let x=3;x<w-3;x+=4+ri(0,4)){if(rnd()<.6){P.p(x,y+10,'#3f9a3a');P.p(x+1,y+9,'#5cc04c');P.p(x,y+9,'#2f7a2a')}}
+        if(rnd()<.5)for(let x=2;x<w-3;x+=3)if(rnd()<.6)P.r(x,y+5,2,3,pick(['#e8402a','#f2c14e','#3f8fe0','#ffffff','#e85aa8']))}
+      if(!ground&&rnd()<.35){P.r(w-7,y+8,5,3,'#dcdcd4');P.p(w-6,y+9,'#9a9a92')}
+    }
+  });
+}
+function genTemple(th){
+  const bw=24+ri(0,10),w=bw+8,tiers=Math.max(3,((bw-6)/4)|0),h=28+tiers*6+22;
+  return mkSprite(w,h,(P,L)=>{
+    const c=pick(['#e7b06a','#efe2c8','#e39a5a','#f2d7b0']),c2=shade(c,-.2),cx=w/2;
+    P.r(0,h-8,w,8,shade(c,-.1));for(let i=0;i<3;i++)P.r(i*2,h-8+i*3,w-i*4,1,shade(c,.15));
+    P.r(4,h-28,bw,20,c);P.r(4,h-28,bw,2,c2);for(let x=6;x<4+bw;x+=5)P.r(x,h-26,2,18,shade(c,.08));
+    P.r((cx-3)|0,h-22,6,14,'#3a2414');P.r((cx-3)|0,h-23,6,1,'#ffd23f');L.win((cx-2)|0,h-21,4,12,'#ffcf7a');
+    let y=h-28,tw=bw-2;for(let t=0;t<tiers;t++){const x0=Math.round(cx-tw/2);P.r(x0,y-6,tw,6,c);for(let x=x0+1;x<x0+tw-1;x+=3)P.r(x,y-6,1,6,c2);P.r(x0,y-1,tw,1,c2);y-=6;tw-=4}
+    P.r(Math.round(cx-4),y-3,8,3,shade(c,.12));P.r(Math.round(cx-1),y-7,2,4,'#ffd23f');P.r(Math.round(cx),y-17,1,10,'#5a3a1a');P.r(Math.round(cx)+1,y-17,5,2,'#ff7a1a');P.r(Math.round(cx)+1,y-15,3,2,'#ff7a1a');
+  });
+}
+function genHaveli(th){
+  const w=32+ri(0,20),h=46+ri(0,16);
+  return mkSprite(w,h,(P,L)=>{
+    const wall=pick(th.walls),trim=pick(th.trims);P.r(0,8,w,h-8,wall);wallStains(P,w,10,h-10,wall);
+    for(let x=0;x<w;x+=4)P.r(x,6,2,3,wall);P.r(0,9,w,1,shade(wall,-.2));
+    const jx=(w/2|0)-7;P.r(jx,16,14,12,shade(wall,.08));P.ell(jx+7,15,7,4,shade(wall,.12));P.r(jx+6,9,2,3,'#ffd23f');P.r(jx+2,19,3,7,'#24203a');P.r(jx+9,19,3,7,'#24203a');if(rnd()<.6){L.win(jx+2,20,3,6);L.win(jx+9,20,3,6)}P.r(jx-1,28,16,2,trim);
+    for(let x=4;x<w-6;x+=10){const y=h-16;P.r(x,y+2,6,12,'#2a2238');P.ell(x+3,y+2,3,2,'#2a2238');if(rnd()<.5)L.win(x+1,y+3,4,10,'#ffc35a')}
+  });
+}
+function genDomeB(th){
+  const w=40+ri(0,16),bh=26,dr=Math.max(7,(w/5)|0),h=bh+dr*2+16;
+  return mkSprite(w,h,(P,L)=>{
+    const c=pick(['#efe6d6','#f2e2c6','#e8c9b0','#e6d3e6']),c2=shade(c,-.18),cx=w/2|0;
+    P.r(4,h-bh,w-8,bh,c);P.r(4,h-bh,w-8,2,c2);
+    for(let x=8;x<w-12;x+=8){P.r(x,h-bh+8,5,bh-8,'#2a2238');P.ell(x+2,h-bh+8,2,2,'#2a2238');if(rnd()<.45)L.win(x+1,h-bh+9,3,bh-10,'#ffcf7a')}
+    P.r(cx-dr+2,h-bh-4,dr*2-4,4,c);P.ell(cx,h-bh-4-dr*.8,dr,dr,c);P.r(cx-1,h-bh-4-dr*2-6,2,7,'#ffd23f');P.p(cx,h-bh-4-dr*2-8,'#ffd23f');
+    for(const mx of [1,w-4]){P.r(mx,8,3,h-8,c);P.r(mx-1,16,5,1,c2);P.r(mx-1,30,5,1,c2);P.ell(mx+1,7,2,2,c);P.p(mx+1,4,'#ffd23f')}
+  });
+}
+function genFortWall(th){
+  const w=60+ri(0,24),h=34;
+  return mkSprite(w,h,(P,L)=>{const c=pick(['#c96a4a','#d98a5a','#c47a52']);P.r(0,8,w,h-8,c);for(let x=0;x<w;x+=5)P.r(x,5,3,3,c);wallStains(P,w,9,h-9,c);for(let y=12;y<h;y+=5)for(let x=(y%10?0:3);x<w;x+=7)P.r(x,y,5,1,shade(c,-.12));const bx=w-18;P.r(bx,0,14,h,shade(c,.05));P.ell(bx+7,0,7,3,shade(c,.1));P.r(bx+3,-0,8,1,c);P.r(bx+5,10,4,6,'#2a1a1a');if(rnd()<.5)L.win(bx+5,11,4,5,'#ffb04a')});
+}
+function genTower(th){
+  const w=24+ri(0,18),h=80+ri(0,70);
+  return mkSprite(w,h,(P,L)=>{const g=pick(['#4f7fb8','#6a8fb8','#7a9cc0','#5a6f9a','#9aa6b8']),fr=shade(g,-.25);P.r(0,6,w,h-6,fr);P.r(2,4,w-4,3,shade(g,-.1));P.r((w/2|0),0,1,5,'#c9ccd6');L.win((w/2|0),0,1,1,'#ff4040');
+    for(let y=10;y<h-4;y+=6)for(let x=2;x<w-3;x+=5){P.r(x,y,4,4,g);if((x+y)%13<4)P.r(x,y,1,4,shade(g,.3));if(rnd()<.45)L.win(x,y,4,4,pick(['#ffe39a','#cfe8ff','#ffd27a']))}});
+}
+function genShopOrHouse(th,kind){return kind==='shop'?genHouse(th,true):genHouse(th,false)}
+function genMid(th){const k=pick(th.mid);if(k==='temple')return genTemple(th);if(k==='haveli')return genHaveli(th);if(k==='domeb')return genDomeB(th);if(k==='fortwall')return genFortWall(th);if(k==='tower')return genTower(th);return genShopOrHouse(th,k)}
+
+function genFar(th){
+  const k=pick(th.far),c='#5d6188';
+  const S=(w,h,fn)=>mkSprite(w,h,fn,{outline:null,shade:false});
+  if(k==='spire'){const w=18+ri(0,8),h=40+ri(0,24);return S(w,h,(P,L)=>{P.r(0,h-12,w,12,c);let y=h-12,tw=w-4;while(tw>2){P.r((w-tw)/2,y-5,tw,5,c);y-=5;tw-=3}P.r(w/2|0,y-6,1,6,c);P.r((w/2|0)+1,y-6,3,2,'#7a6a8a')})}
+  if(k==='dome2'){const w=28+ri(0,12),h=34+ri(0,10);return S(w,h,(P,L)=>{P.r(2,h-14,w-4,14,c);P.ell(w/2,h-18,w/4,w/4,c);P.r(w/2|0,h-18-w/2-4,1,5,c);P.r(0,h-30,2,30,c);P.r(w-2,h-30,2,30,c);if(rnd()<.6)L.win(6,h-8,2,3,'#ffcf7a')})}
+  if(k==='minar'){const h=50+ri(0,14);return S(8,h,P=>{P.r(2,6,4,h-6,c);P.r(1,14,6,1,c);P.r(1,28,6,1,c);P.ell(4,5,2,2,c);P.p(4,1,c)})}
+  if(k==='tank'){return S(16,40,P=>{P.r(1,4,14,10,c);P.ell(8,4,7,2,c);P.r(3,14,2,26,c);P.r(11,14,2,26,c);pixLineP(P,3,18,13,30,c);pixLineP(P,13,18,3,30,c)})}
+  if(k==='mtower'){return S(14,56,(P,L)=>{for(let y=4;y<56;y++){const half=1+(y/56*5)|0;P.p(7-half,y,c);P.p(7+half,y,c);if(y%6===0)P.r(7-half,y,half*2+1,1,c)}P.r(5,2,5,4,c);L.win(7,0,1,1,'#ff4040')})}
+  if(k==='block'){const w=24+ri(0,20),h=26+ri(0,20);return S(w,h,(P,L)=>{P.r(0,3,w,h-3,c);P.r(3,0,6,4,c);for(let y=7;y<h-3;y+=6)for(let x=3;x<w-3;x+=5)if(rnd()<.35)L.win(x,y,2,2,'#ffd27a')})}
+  if(k==='fort'){const w=80+ri(0,30),h=46;return S(w,h,P=>{P.ell(w/2,h,w/2,22,c);P.r(10,h-34,w-20,12,c);for(let x=10;x<w-10;x+=4)P.r(x,h-37,2,3,c);P.r(w/2-8,h-44,16,10,c);P.ell(w/2,h-44,6,3,c)})}
+  if(k==='bridge'){const w=130,h=60;return S(w,h,(P,L)=>{P.r(0,h-12,w,3,c);P.r(40,4,4,h-9,c);P.r(92,10,4,h-15,c);for(let i=0;i<7;i++){pixLineP(P,42,6+i*2,6+i*5,h-12,c);pixLineP(P,42,6+i*2,78-i*4,h-12,c);pixLineP(P,94,12+i*2,62+i*4,h-12,c);pixLineP(P,94,12+i*2,126-i*4,h-12,c)}for(let x=4;x<w;x+=8)L.win(x,h-12,2,1,'#ffe39a')})}
+  const w=18+ri(0,16);return S(w,30,P=>{P.ell(w/2,16,w/2,10,c);P.r(w/2-1,24,2,6,c)});
+}
+function pixLineP(P,x0,y0,x1,y1,c){const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0))||1;for(let i=0;i<=n;i++)P.p(Math.round(lerp(x0,x1,i/n)),Math.round(lerp(y0,y1,i/n)),c)}
+
+function genTree(){const w=30+ri(0,14),h=42+ri(0,16);return mkSprite(w,h,P=>{const g=[pick(['#2f7a3a','#3a8a3a','#2e6e44']),'#4fae4a','#7ccf5a'];P.r(w/2-2,h-18,4,18,'#6a4426');P.r(w/2-4,h-2,8,2,'#6a4426');P.r(w/2,h-22,1,6,'#6a4426');for(let i=0;i<9;i++)P.ell(rr(7,w-7),rr(9,h-22),ri(5,8),ri(4,7),g[0]);for(let i=0;i<14;i++)P.ell(rr(7,w-7),rr(7,h-26),ri(2,4),ri(2,3),g[1]);for(let i=0;i<26;i++)P.p(rr(5,w-5),rr(4,h-26),g[2])})}
+function genPalm(){const h=52+ri(0,14),w=30;return mkSprite(w,h,P=>{for(let y=12;y<h;y++){const x=Math.round(15+Math.sin(y*.08)*3);P.r(x-1,y,3,1,y%3?'#8a6a3a':'#6a4a26')}const tx=15,ty=12,leaf=['#3a9a4a','#2f7a3a','#5cbf5a'];for(let a=0;a<7;a++){const ang=-Math.PI*.95+a*(Math.PI*.95/3);for(let i=0;i<13;i++){const x=tx+Math.cos(ang)*i,y=ty+Math.sin(ang)*i*.6+i*i*.05;P.r(x,y,2,2,leaf[i%3===0?2:a%2])}}P.ell(15,13,2,2,'#7a5a2a')})}
+function genWall(){const w=44+ri(0,26),h=16;return mkSprite(w,h,P=>{const c=pick(['#efe6d6','#e9d3b0','#d6e0e6']);P.r(0,2,w,h-2,c);for(let x=0;x<w;x+=6)P.r(x,0,4,2,c);wallStains(P,w,3,h-3,c);const ad=pick(WALLADS);if(textW(ad)<w-6){const bg=ad.includes('VERIFY')||ad.includes('1930')?'#2f6fb0':ad.includes('3X')?'#e8402a':pick(['#c23a3a','#2f6fb0','#3f8a3a']);P.r(2,4,textW(ad)+4,9,bg);P.txt(ad,4,6,'#fff6e0')}})}
+function genPole(){return mkSprite(10,64,P=>{P.r(4,4,2,60,'#8a8a92');P.r(0,6,10,2,'#5a5a62');P.p(0,5,'#d8d8de');P.p(9,5,'#d8d8de');P.p(5,4,'#d8d8de');P.r(3,30,4,6,'#4a4a56')})}
+function genKiosk(){const w=24,h=26;return mkSprite(w,h,(P,L)=>{const tarp=pick(['#2f6fb0','#e8402a','#3fb36a']);P.r(0,2,w,4,tarp);for(let x=0;x<w;x+=3)P.p(x,6,tarp);P.r(2,6,1,h-6,'#6a4a2a');P.r(w-3,6,1,h-6,'#6a4a2a');P.r(1,14,w-2,12,'#8a5a2f');P.r(1,14,w-2,2,'#a87a4a');for(let i=0;i<14;i++)P.p(rr(3,w-3),rr(8,13),pick(['#ffd23f','#e8402a','#3fd0b6','#f4efe2','#ff8a1a']));P.r(w/2,6,1,2,'#3a3a3a');P.p(w/2,8,'#fff3b0');L.win(w/2-1,8,3,2,'#fff3b0');P.meta.lamp=[w/2+1,9]})}
+function genAuto(){return mkSprite(26,18,P=>{const body=pick(['#2f8a4a','#1c1c24']),top='#f2c230';P.r(4,0,18,3,top);P.r(4,3,2,7,top);P.r(20,3,2,7,'#3a3a46');P.r(2,9,22,6,body);P.r(1,10,3,4,top);P.r(6,4,12,5,'#24203a');P.r(6,4,12,1,'#3c3760');P.ell(5,15,2,2,'#1a1a20');P.ell(21,15,2,2,'#1a1a20');P.p(5,15,'#8a8a92');P.p(21,15,'#8a8a92');P.p(1,11,'#fff3b0')})}
+function genNear(th){const k=pick(th.near);if(k==='tree')return genTree();if(k==='palm')return genPalm();if(k==='wall')return genWall();if(k==='pole'){const s=genPole();s.meta.pole=true;return s}if(k==='kiosk')return genKiosk();if(k==='auto')return genAuto();return genTree()}
+function genCloud(){const w=40+ri(0,40),h=16+ri(0,8);return mkSprite(w,h,P=>{for(let i=0;i<7;i++)P.ell(rr(8,w-8),rr(h*.45,h-6),ri(5,9),ri(4,6),'#ffffff');P.r(4,h-5,w-8,4,'#dfe6f2');for(let i=0;i<4;i++)P.ell(rr(8,w-8),h-4,ri(4,7),2,'#c9d2e4')},{outline:null})}
+
+/* platform props, at the hero's depth */
+const PROPS={
+ lamp:()=>{const s=mkSprite(8,48,P=>{P.r(2,6,2,42,'#3b3f52');P.r(2,5,5,1,'#3b3f52');P.r(4,6,3,2,'#ffe7a8');P.r(1,44,4,4,'#2b2f40')});s.meta.lamp=[6,9];return s},
+ bench:()=>mkSprite(18,8,P=>{P.r(0,0,18,2,'#8a5a2f');P.r(0,3,18,2,'#a8743f');P.r(1,5,2,3,'#3a3a46');P.r(15,5,2,3,'#3a3a46')}),
+ bin:()=>mkSprite(7,10,P=>{P.r(0,0,7,2,'#2f8a4a');P.r(1,2,5,8,'#3fb36a');P.r(2,4,3,1,'#f4efe2')}),
+ poster:()=>mkSprite(28,30,P=>{P.r(2,18,2,12,'#3a3a46');P.r(24,18,2,12,'#3a3a46');P.r(0,0,28,19,'#f4efe2');P.r(0,0,28,6,'#2f6fb0');P.txt('ALERT',4,1,'#fff6e0');P.txt('VERIFY',3,7,'#2a2238');P.txt('1930',7,13,'#c23a3a')}),
+ milestone:(km)=>mkSprite(14,14,P=>{P.r(0,5,14,9,'#f4efe2');P.ell(7,5,7,4,'#f2c230');P.r(0,5,14,1,'#d9a520');const t=String(km);P.txt(t,(14-textW(t))/2|0,7,'#2a2238')})
+};
+
+/* ---------- i18n ---------- */
+let LANG=store.get('lang','en');
+const STR={
+ tag:{en:"Practise spotting scams before they cost you money",hi:"पैसे गँवाने से पहले, स्कैम पहचानना सीखें"},
+ start:{en:"Start journey",hi:"सफ़र शुरू करें"},
+ how:{en:"How to play",hi:"कैसे खेलें"},
+ soundOn:{en:"Sound on",hi:"आवाज़ चालू"},soundOff:{en:"Sound off",hi:"आवाज़ बंद"},
+ fine:{en:"Prototype with 4 levels. All people, brands, apps and coins are fictional. No real money, no sign-up, nothing leaves your phone.",hi:"4 लेवल वाला प्रोटोटाइप। सभी लोग, ब्रांड, ऐप और सिक्के काल्पनिक हैं। न असली पैसा, न साइन-अप, कुछ भी आपके फ़ोन से बाहर नहीं जाता।"},
+ briefT:{en:"Your journey",hi:"आपका सफ़र"},
+ b1:{en:"Each level is a train route between Indian cities. You start with 1,000 coins, and the coins you keep carry over to the next level.",hi:"हर लेवल भारतीय शहरों के बीच एक ट्रेन रूट है। आप 1,000 सिक्कों से शुरू करते हैं, और जो सिक्के बचें वे अगले लेवल में साथ जाते हैं।"},
+ b2:{en:"Tap, click or press Space to jump. Tap again in the air to double jump.",hi:"कूदने के लिए टैप करें या Space दबाएँ। हवा में दोबारा टैप करें तो डबल जंप।"},
+ b3:{en:"In scam encounters, strangers message you. Some are scams, some are genuine. Tap Verify before you act. In the money levels you answer Yes or No.",hi:"स्कैम वाले मुक़ाबलों में अजनबी मैसेज करते हैं। कुछ स्कैम हैं, कुछ असली। कुछ भी करने से पहले Verify दबाएँ। पैसों वाले लेवल में आप हाँ या नहीं चुनते हैं।"},
+ b4:{en:"Mithu the parrot repeats what he hears. He is mostly right early on, and wrong more often as the levels go up.",hi:"मिट्ठू तोता जो सुनता है वही दोहराता है। शुरू में ज़्यादातर सही, और लेवल बढ़ने पर अक्सर ग़लत।"},
+ b5:{en:"Score = coins kept + Safe Streak (Level 1) or correct Yes/No answers (Levels 2–4), plus a time bonus capped at 20%. Speed never beats safety.",hi:"स्कोर = बचे सिक्के + सेफ़ स्ट्रीक (लेवल 1) या सही हाँ/नहीं जवाब (लेवल 2–4), और अधिकतम 20% का टाइम बोनस। जल्दबाज़ी कभी सुरक्षा से आगे नहीं।"},
+ go:{en:"Let’s go",hi:"चलो चलें"},close:{en:"Close",hi:"बंद करें"},
+ verify:{en:"Verify first",hi:"पहले जाँचें"},ignore:{en:"Ignore",hi:"अनदेखा करें"},report:{en:"Report & block",hi:"रिपोर्ट और ब्लॉक"},cont:{en:"Continue",hi:"आगे बढ़ें"},
+ checking:{en:"Checking…",hi:"जाँच हो रही है…"},verifyCost:{en:"Verifying costs 2 minutes of journey time.",hi:"जाँच में सफ़र के 2 मिनट लगते हैं।"},
+ offer:{en:"Offer ends in",hi:"ऑफ़र ख़त्म होने में"},mithu:{en:"Mithu says",hi:"मिट्ठू कहता है"},incoming:{en:"Incoming call",hi:"इनकमिंग कॉल"},
+ readAloud:{en:"Read aloud",hi:"पढ़कर सुनाएँ"},
+ vLost:{en:"You got scammed",hi:"आप स्कैम में फँस गए"},vCaught:{en:"Scam spotted and reported",hi:"स्कैम पकड़ा और रिपोर्ट किया"},vIgnored:{en:"Safe, but unchecked",hi:"सुरक्षित, पर बिना जाँचे"},vExpired:{en:"The countdown ran out. Nothing happened.",hi:"उल्टी गिनती ख़त्म हुई। कुछ नहीं बिगड़ा।"},
+ vLegitOk:{en:"Genuine, and you checked",hi:"असली, और आपने जाँचा"},vLucky:{en:"Genuine, but unchecked",hi:"असली, पर बिना जाँचे"},vMissed:{en:"That one was genuine",hi:"वह असली था"},
+ itWasScam:{en:"It was a scam.",hi:"यह स्कैम था।"},
+ nCaught:{en:"In real life, report it at cybercrime.gov.in or call 1930, then block the sender.",hi:"असल ज़िंदगी में cybercrime.gov.in पर रिपोर्ट करें या 1930 पर कॉल करें, फिर भेजने वाले को ब्लॉक करें।"},
+ nIgnored:{en:"You stayed safe. Checking first would also have earned a Safe Streak point.",hi:"आप सुरक्षित रहे। पहले जाँचते तो सेफ़ स्ट्रीक पॉइंट भी मिलता।"},
+ nExpired:{en:"Scammers use countdowns to rush you. Letting the clock run out cost you nothing.",hi:"स्कैमर उल्टी गिनती से जल्दबाज़ी कराते हैं। घड़ी ख़त्म होने देने से आपका कुछ नहीं गया।"},
+ nLucky:{en:"It was genuine this time. Make it a habit: check every time.",hi:"इस बार असली था। आदत बनाइए: हर बार जाँचें।"},
+ nMissed:{en:"No harm done. A quick check would have shown it was genuine.",hi:"कोई नुकसान नहीं। ज़रा-सी जाँच से पता चल जाता कि यह असली था।"},
+ nMithuWrong:{en:"Mithu was wrong this time. Friendly voices need checking too.",hi:"इस बार मिट्ठू ग़लत था। अपनों की बात भी जाँचनी चाहिए।"},
+ streakBroken:{en:"Safe Streak reset to 0.",hi:"सेफ़ स्ट्रीक 0 हो गई।"},
+ redFlags:{en:"Red flags",hi:"ख़तरे के संकेत"},goodSigns:{en:"Signs it was genuine",hi:"असली होने के संकेत"},
+ coins:{en:"coins",hi:"सिक्के"},min:{en:"min",hi:"मिनट"},streakPlus:{en:"+1 Safe Streak",hi:"+1 सेफ़ स्ट्रीक"},
+ stopOf:{en:"Stop {n} of {m} · {t}",hi:"पड़ाव {n}/{m} · {t}"},stopLead:{en:"Pick one before you move on.",hi:"आगे बढ़ने से पहले एक चुनें।"},
+ gig:{en:"Do a gig",hi:"एक काम करें"},gullakT:{en:"Gullak Bond (fictional)",hi:"गुल्लक बॉन्ड (काल्पनिक)"},gullakD:{en:"Lock 200 coins. Grows 6% at every stop. Scammers can’t touch it.",hi:"200 सिक्के जमा करें। हर पड़ाव पर 6% बढ़ते हैं। स्कैमर इन्हें छू नहीं सकते।"},
+ expressT:{en:"Express train",hi:"एक्सप्रेस ट्रेन"},expressD:{en:"Pay for a faster train to the next town.",hi:"अगले शहर तक तेज़ ट्रेन का किराया दें।"},
+ moveT:{en:"Keep moving",hi:"चलते रहें"},moveD:{en:"Keep your coins and go now.",hi:"सिक्के बचाएँ और अभी निकलें।"},
+ gullakHas:{en:"In your Gullak: {n} coins",hi:"आपकी गुल्लक में: {n} सिक्के"},gullakGrew:{en:"It grew 6% since the last stop.",hi:"पिछले पड़ाव से 6% बढ़ी।"},
+ next:{en:"Next: {t}",hi:"अगला: {t}"},
+ gigs:{en:["Tutor two kids for an evening","Help out at a chai stall","Design posters for a sweet shop","Edit reels for a local café"],hi:["शाम को दो बच्चों को पढ़ाएँ","चाय की दुकान पर हाथ बँटाएँ","मिठाई की दुकान के पोस्टर बनाएँ","लोकल कैफ़े के रील्स एडिट करें"]},
+ endT:{en:"You reached {b}!",hi:"आप {b} पहुँच गए!"},arrived:{en:"Arrived at {t}",hi:"पहुँचने का समय {t}"},
+ eCoins:{en:"Coins kept",hi:"बचे सिक्के"},eGullak:{en:"Gullak Bond",hi:"गुल्लक बॉन्ड"},eStreak:{en:"Safe Streak points × 50",hi:"सेफ़ स्ट्रीक पॉइंट × 50"},eTime:{en:"Time bonus (max 20%)",hi:"टाइम बोनस (अधिकतम 20%)"},eTotal:{en:"Final score",hi:"कुल स्कोर"},best:{en:"Best {n}",hi:"सर्वश्रेष्ठ {n}"},
+ card:{en:"Your report card",hi:"आपका रिपोर्ट कार्ड"},
+ sSpotted:{en:"scams spotted",hi:"स्कैम पकड़े"},sVerified:{en:"checked before acting",hi:"करने से पहले जाँचा"},sLost:{en:"coins lost to scams",hi:"स्कैम में गए सिक्के"},sMithu:{en:"wrong Mithu hints followed",hi:"मिट्ठू की ग़लत सलाह मानी"},
+ flagsMet:{en:"Red flags you met",hi:"आपको मिले ख़तरे के संकेत"},
+ parivarT:{en:"Parivar challenge",hi:"परिवार चैलेंज"},parivarD:{en:"Ask a parent or grandparent these 3 questions tonight.",hi:"आज रात माता-पिता या दादा-दादी से ये 3 सवाल पूछें।"},
+ copyQ:{en:"Copy the questions",hi:"सवाल कॉपी करें"},copied:{en:"Copied. Paste it in your family group.",hi:"कॉपी हो गया। परिवार के ग्रुप में पेस्ट करें।"},copyFail:{en:"Copy didn’t work here. Select the questions and copy them.",hi:"यहाँ कॉपी नहीं हुआ। सवाल चुनकर कॉपी करें।"},
+ again:{en:"Play again (new route)",hi:"फिर खेलें (नया रास्ता)"},
+ help:{en:"<b>If money is ever lost to fraud:</b> call <b>1930</b> or report at <a href=\"https://cybercrime.gov.in\" target=\"_blank\" rel=\"noopener\">cybercrime.gov.in</a> as soon as you can. Fast reports give the best chance of freezing the money.",hi:"<b>अगर कभी धोखाधड़ी में पैसा जाए:</b> तुरंत <b>1930</b> पर कॉल करें या <a href=\"https://cybercrime.gov.in\" target=\"_blank\" rel=\"noopener\">cybercrime.gov.in</a> पर रिपोर्ट करें। जल्दी रिपोर्ट करने से पैसा रोके जाने की संभावना सबसे ज़्यादा रहती है।"},
+ paused:{en:"Paused",hi:"रुका हुआ"},resume:{en:"Resume",hi:"जारी रखें"},restart:{en:"Restart journey",hi:"सफ़र फिर से शुरू"},crt:{en:"Scanlines",hi:"स्कैनलाइन"},on:{en:"On",hi:"चालू"},off:{en:"Off",hi:"बंद"},
+ language:{en:"Language",hi:"भाषा"},
+ levelWord:{en:"Level",hi:"लेवल"},lvIntroKick:{en:"Level {n} of 4",hi:"लेवल {n}/4"},
+ mapT:{en:"Level map",hi:"लेवल मैप"},mapSub:{en:"Finish a level to unlock the next. Coins you keep carry over.",hi:"अगला लेवल खोलने के लिए एक लेवल पूरा करें। बचे सिक्के साथ चलते हैं।"},lockedL:{en:"Locked",hi:"बंद"},back:{en:"Back",hi:"वापस"},
+ startNote:{en:"You start with 1,000 coins.",hi:"आप 1,000 सिक्कों से शुरू करते हैं।"},carryNote:{en:"You start with {n} coins, carried over from the last level.",hi:"आप {n} सिक्कों से शुरू करते हैं, जो पिछले लेवल से आए हैं।"},
+ lvlComplete:{en:"Level {n} complete!",hi:"लेवल {n} पूरा!"},nextLvl:{en:"Next level",hi:"अगला लेवल"},replayL:{en:"Replay level",hi:"लेवल फिर खेलें"},toMap:{en:"Level map",hi:"लेवल मैप"},quitMap:{en:"Level map (leave this level)",hi:"लेवल मैप (यह लेवल छोड़ें)"},
+ vYnOk:{en:"Good call",hi:"सही फ़ैसला"},vYnBad:{en:"Costly call",hi:"महँगा फ़ैसला"},vYnSkip:{en:"Time ran out. No decision made.",hi:"समय ख़त्म। कोई फ़ैसला नहीं हुआ।"},correctPlus:{en:"+1 correct",hi:"+1 सही"},keyPoints:{en:"Key points",hi:"मुख्य बातें"},decideIn:{en:"Decide in",hi:"फ़ैसले का समय"},
+ eCorrect:{en:"Correct decisions × 50",hi:"सही फ़ैसले × 50"},sYn:{en:"Yes/No answers right",hi:"हाँ/नहीं सही जवाब"},sNet:{en:"coins moved by Yes/No",hi:"हाँ/नहीं से सिक्कों में बदलाव"},
+ ranks:{en:["Suraksha Champion","Savdhaan Traveller","Learning Fast","Tip Taker"],hi:["सुरक्षा चैंपियन","सावधान यात्री","तेज़ी से सीखते हुए","टिप के पीछे भागने वाले"]}
+};
+const PARIVAR=[
+ {q:{en:"A WhatsApp group promises 3 times your money in 7 days. Real or scam?",hi:"एक WhatsApp ग्रुप 7 दिन में पैसा 3 गुना करने का वादा करता है। असली या स्कैम?"},a:{en:"Scam. No registered adviser can promise returns, and “only 2 seats left” is fake pressure.",hi:"स्कैम। कोई पंजीकृत सलाहकार रिटर्न का वादा नहीं कर सकता, और “सिर्फ़ 2 सीट” नकली दबाव है।"}},
+ {q:{en:"A caller says your demat account will freeze unless you share the OTP. What do you do?",hi:"कॉलर कहता है कि OTP नहीं बताया तो डीमैट खाता फ़्रीज़ हो जाएगा। आप क्या करेंगे?"},a:{en:"Never share an OTP or PIN. Hang up and call the number on the official website yourself.",hi:"OTP या PIN कभी न बताएँ। फ़ोन काटें और आधिकारिक वेबसाइट पर दिए नंबर पर ख़ुद कॉल करें।"}},
+ {q:{en:"A video shows a famous business leader recommending an app. How can you check it?",hi:"एक वीडियो में मशहूर व्यक्ति एक ऐप की सिफ़ारिश कर रहा है। आप कैसे जाँचेंगे?"},a:{en:"Look for it on their official website or verified handles. Odd lip-sync or a flat voice can mean an AI deepfake.",hi:"उनकी आधिकारिक वेबसाइट या वेरिफ़ाइड हैंडल पर देखें। होंठ-आवाज़ मेल न खाएँ या आवाज़ सपाट हो तो AI डीपफ़ेक हो सकता है।"}}];
+const tx=o=>o==null?'':typeof o==='string'?o:(o[LANG]??o.en);
+function T(k,v){let s=tx(STR[k]);if(v)for(const n in v)s=s.split('{'+n+'}').join(v[n]);return s}
+
+/* ---------- scam & genuine card library (each card is data, so new scams can be added without a new release) ---------- */
+const APPS={chat:{name:'ChatChat',col:'#25a865'},channel:{name:'TeleTip',col:'#2f8fd8'},video:{name:'ReelTube',col:'#d8402a'},post:{name:'SnapGram',col:'#c8337a'},sms:{name:'Messages',col:'#5b6a8c'},call:{name:'Phone',col:'#1f8f7e'},profitmax:{name:'ProfitMax Elite',col:'#7b4bd6'},kalyan:{name:'Kalyan Securities',col:'#2f6fb0'}};
+const CK={reg:{en:"Registration check (SEBI)",hi:"पंजीकरण जाँच (SEBI)"},upi:{en:"UPI handle check (@valid)",hi:"UPI हैंडल जाँच (@valid)"},official:{en:"Official channel check",hi:"आधिकारिक चैनल जाँच"},claim:{en:"Claim check",hi:"दावे की जाँच"},link:{en:"Link check",hi:"लिंक जाँच"},caller:{en:"Caller check",hi:"कॉलर जाँच"}};
+const CARDS=[
+ {id:'tips',kind:'scam',app:'chat',npc:'guru',av:'#25a865',sender:{en:"Rahul Sir Stock Tips",hi:"राहुल सर स्टॉक टिप्स"},sub:{en:"+91 7XXXX X2041 added you to a group",hi:"+91 7XXXX X2041 ने आपको ग्रुप में जोड़ा"},
+  msg:{en:"Welcome to VIP Profit Club! Our members made 3x in 7 days. Only 2 seats left. Pay 300 coins to join premium.",hi:"VIP प्रॉफ़िट क्लब में स्वागत है! हमारे मेंबर्स ने 7 दिन में 3 गुना कमाया। सिर्फ़ 2 सीट बची हैं। प्रीमियम जॉइन करने के लिए 300 सिक्के दें।"},
+  cta:{en:"Pay & join",hi:"भुगतान कर जॉइन करें"},cd:13,loss:.28,delay:40,
+  checks:[['reg',{en:"“Rahul Sir” is not a registered investment adviser or research analyst.",hi:"“राहुल सर” पंजीकृत निवेश सलाहकार या रिसर्च एनालिस्ट नहीं हैं।"}],['claim',{en:"Registered advisers can’t promise returns. “3x in 7 days” is a red flag on its own.",hi:"पंजीकृत सलाहकार रिटर्न का वादा नहीं कर सकते। “7 दिन में 3 गुना” अपने आप में ख़तरे का संकेत है।"}]],
+  outcome:{en:"You paid. Next they push a “trading app” that shows fake profits, then the group goes silent.",hi:"आपने भुगतान किया। फिर उन्होंने एक “ट्रेडिंग ऐप” थमाया जिसमें नकली मुनाफ़ा दिखा, और फिर ग्रुप चुप हो गया।"},
+  flags:[{en:"A stranger added you to a group",hi:"अनजान ने ग्रुप में जोड़ा"},{en:"Promised high returns",hi:"ऊँचे रिटर्न का वादा"},{en:"“Only 2 seats left”",hi:"“सिर्फ़ 2 सीट बची हैं”"}],
+  right:{en:"Squawk! 3x in 7 days? Nobody can promise that. Verify karo!",hi:"टें-टें! 7 दिन में 3 गुना? ऐसा वादा कोई नहीं कर सकता। पहले जाँचो!"}},
+ {id:'app',kind:'scam',app:'profitmax',npc:'guru',av:'#7b4bd6',sender:{en:"ProfitMax Elite",hi:"ProfitMax Elite"},sub:{en:"App notification",hi:"ऐप नोटिफ़िकेशन"},
+  msg:{en:"Congratulations! Your balance is 4,800 coins. To withdraw, first pay an 18% “release tax” of 250 coins within 10 minutes.",hi:"बधाई हो! आपका बैलेंस 4,800 सिक्के है। निकालने के लिए पहले 10 मिनट में 18% “रिलीज़ टैक्स” यानी 250 सिक्के दें।"},
+  cta:{en:"Pay release tax",hi:"रिलीज़ टैक्स दें"},cd:11,loss:.3,delay:50,
+  checks:[['reg',{en:"ProfitMax Elite is not a registered stockbroker.",hi:"ProfitMax Elite कोई पंजीकृत स्टॉकब्रोकर नहीं है।"}],['claim',{en:"Real platforms handle tax themselves. None asks for a fee to release your own money.",hi:"असली प्लेटफ़ॉर्म टैक्स ख़ुद संभालते हैं। कोई भी आपका ही पैसा छोड़ने के लिए फ़ीस नहीं माँगता।"}]],
+  outcome:{en:"You paid. The app asks for another “fee”, then blocks your login. The 4,800 never existed.",hi:"आपने भुगतान किया। ऐप ने एक और “फ़ीस” माँगी, फिर लॉगिन ब्लॉक कर दिया। वह 4,800 कभी थे ही नहीं।"},
+  flags:[{en:"Big profit you can’t withdraw",hi:"भारी मुनाफ़ा जो निकल नहीं सकता"},{en:"A fee to release your money",hi:"पैसा निकालने के लिए फ़ीस"},{en:"A 10-minute deadline",hi:"10 मिनट की डेडलाइन"}],
+  right:{en:"Pay money to get your own money? Kuch toh gadbad hai!",hi:"अपना ही पैसा पाने के लिए पैसे दो? कुछ तो गड़बड़ है!"}},
+ {id:'ipo',kind:'scam',app:'sms',npc:'officer',av:'#5b6a8c',sender:{en:"VM-IPOALT",hi:"VM-IPOALT"},sub:{en:"Text message",hi:"टेक्स्ट मैसेज"},
+  msg:{en:"Guaranteed allotment in the Sunrise Foods IPO (fictional) through our institutional quota! Pay 200 coins to ipoquota.vip@fastpe today.",hi:"सनराइज़ फ़ूड्स IPO (काल्पनिक) में हमारे इंस्टिट्यूशनल कोटे से पक्का अलॉटमेंट! आज ही ipoquota.vip@fastpe पर 200 सिक्के भेजें।"},
+  cta:{en:"Pay for allotment",hi:"अलॉटमेंट के लिए भुगतान"},cd:12,loss:.22,delay:30,
+  checks:[['upi',{en:"ipoquota.vip@fastpe has no @valid tag. Registered intermediaries collect money through handles like name.brk@valid…",hi:"ipoquota.vip@fastpe में @valid नहीं है। पंजीकृत संस्थाएँ name.brk@valid… जैसे हैंडल से पैसा लेती हैं।"}],['claim',{en:"When an IPO is oversubscribed, retail shares go by lottery. Nobody can sell a guaranteed “quota”.",hi:"IPO ओवरसब्सक्राइब होने पर रिटेल शेयर लॉटरी से मिलते हैं। कोई पक्का “कोटा” नहीं बेच सकता।"}]],
+  outcome:{en:"You paid. No shares arrive, and the sender’s number is switched off.",hi:"आपने भुगतान किया। कोई शेयर नहीं आए, और भेजने वाले का नंबर बंद है।"},
+  flags:[{en:"“Guaranteed” IPO allotment",hi:"“पक्का” IPO अलॉटमेंट"},{en:"Payment to an unknown UPI handle",hi:"अनजान UPI हैंडल पर भुगतान"},{en:"A “special quota” for you",hi:"आपके लिए “ख़ास कोटा”"}],
+  right:{en:"IPO shares go by lottery, bhai. Guarantee? Jhooth!",hi:"IPO शेयर तो लॉटरी से मिलते हैं। गारंटी? झूठ!"}},
+ {id:'deepfake',kind:'scam',app:'video',npc:'deepfake',av:'#d8402a',sender:{en:"R. Mehra, CEO, National Bourse (fictional)",hi:"आर. मेहरा, CEO, नेशनल बोर्स (काल्पनिक)"},sub:{en:"Sponsored video",hi:"प्रायोजित वीडियो"},
+  msg:{en:"“I personally use the Nifty Rocket app. Join with 500 coins and earn 2% every day. Link in bio.”",hi:"“मैं ख़ुद निफ़्टी रॉकेट ऐप इस्तेमाल करता हूँ। 500 सिक्कों से जुड़ें और रोज़ 2% कमाएँ। लिंक बायो में।”"},
+  cta:{en:"Open link",hi:"लिंक खोलें"},cd:14,loss:.3,delay:35,
+  checks:[['official',{en:"No such video on the exchange’s official website or verified handles.",hi:"एक्सचेंज की आधिकारिक वेबसाइट या वेरिफ़ाइड हैंडल पर ऐसा कोई वीडियो नहीं है।"}],['claim',{en:"The lips drift off the words and the voice sounds flat: signs of an AI deepfake. Exchanges don’t recommend apps or stocks.",hi:"होंठ शब्दों से मेल नहीं खाते और आवाज़ सपाट है: AI डीपफ़ेक के संकेत। एक्सचेंज कोई ऐप या शेयर नहीं सुझाते।"}]],
+  outcome:{en:"The link installs a fake trading app. Your “deposit” disappears.",hi:"लिंक से एक नकली ट्रेडिंग ऐप इंस्टॉल हुआ। आपकी “जमा” राशि ग़ायब।"},
+  flags:[{en:"A famous face selling an app",hi:"मशहूर चेहरा ऐप बेच रहा है"},{en:"“2% every day”",hi:"“रोज़ 2%”"},{en:"Glitchy lips and voice",hi:"होंठ और आवाज़ में गड़बड़"}],
+  right:{en:"His lips and voice don’t match. Deepfake ho sakta hai!",hi:"होंठ और आवाज़ मेल नहीं खाते। डीपफ़ेक हो सकता है!"}},
+ {id:'course',kind:'scam',app:'post',npc:'influencer',av:'#c8337a',sender:{en:"@BullRunBunty",hi:"@BullRunBunty"},sub:{en:"2.1M followers · Sponsored",hi:"21 लाख फ़ॉलोअर्स · प्रायोजित"},
+  msg:{en:"My F&O strategy has 100% accuracy! Course price slashed from 1,000 to 150 coins. Offer for the next 9 minutes only.",hi:"मेरी F&O स्ट्रैटेजी 100% सटीक है! कोर्स की क़ीमत 1,000 से घटकर 150 सिक्के। ऑफ़र सिर्फ़ अगले 9 मिनट।"},meta:{en:"48.2K likes · 3.1K comments",hi:"48.2 हज़ार लाइक · 3.1 हज़ार कमेंट"},
+  cta:{en:"Buy course",hi:"कोर्स ख़रीदें"},cd:11,loss:.15,delay:20,
+  checks:[['reg',{en:"@BullRunBunty is not a registered investment adviser or research analyst.",hi:"@BullRunBunty पंजीकृत निवेश सलाहकार या रिसर्च एनालिस्ट नहीं है।"}],['claim',{en:"No strategy is 100% accurate. In FY26, about 89% of individual F&O traders under 30 lost money (SEBI study).",hi:"कोई स्ट्रैटेजी 100% सही नहीं होती। FY26 में 30 से कम उम्र के लगभग 89% व्यक्तिगत F&O ट्रेडर्स को नुकसान हुआ (SEBI अध्ययन)।"}]],
+  outcome:{en:"The “course” is a few screenshots and a link to a paid tips group.",hi:"“कोर्स” बस कुछ स्क्रीनशॉट और एक पेड टिप्स ग्रुप का लिंक निकला।"},
+  flags:[{en:"“100% accuracy”",hi:"“100% सटीकता”"},{en:"Followers aren’t credentials",hi:"फ़ॉलोअर्स योग्यता नहीं हैं"},{en:"A discount that ends in minutes",hi:"कुछ ही मिनट की छूट"}],
+  right:{en:"Lots of followers, but registered? Check karo!",hi:"फ़ॉलोअर्स तो बहुत हैं, पर पंजीकृत? जाँच करो!"}},
+ {id:'kyc',kind:'scam',app:'call',npc:'officer',av:'#1f8f7e',sender:{en:"Demat Helpdesk",hi:"डीमैट हेल्पडेस्क"},sub:{en:"+91 98XXX X7310 · calling",hi:"+91 98XXX X7310 · कॉल आ रही है"},
+  msg:{en:"“Your demat account will be frozen in 30 minutes because your KYC is pending. Tell me the OTP we just sent and I’ll update it.”",hi:"“KYC बाकी है, आपका डीमैट खाता 30 मिनट में फ़्रीज़ हो जाएगा। अभी भेजा गया OTP बताइए, मैं अपडेट कर दूँगा।”"},
+  cta:{en:"Share OTP",hi:"OTP बताएँ"},cd:11,loss:.4,delay:45,
+  checks:[['caller',{en:"It’s a personal mobile number, not your broker’s or depository’s official line.",hi:"यह एक निजी मोबाइल नंबर है, आपके ब्रोकर या डिपॉज़िटरी की आधिकारिक लाइन नहीं।"}],['claim',{en:"No broker or depository asks for your OTP or PIN on a call.",hi:"कोई ब्रोकर या डिपॉज़िटरी कॉल पर OTP या PIN नहीं माँगता।"}]],
+  outcome:{en:"With your OTP they log in and move your holdings out. Getting them back takes weeks.",hi:"आपके OTP से उन्होंने लॉगिन कर होल्डिंग्स निकाल लीं। वापस पाने में हफ़्तों लगेंगे।"},
+  flags:[{en:"A threat: “account frozen”",hi:"धमकी: “खाता फ़्रीज़”"},{en:"Asks for your OTP",hi:"OTP माँगा"},{en:"A 30-minute deadline",hi:"30 मिनट की डेडलाइन"}],
+  right:{en:"OTP? Kabhi nahi! Hang up!",hi:"OTP? कभी नहीं! फ़ोन काटो!"}},
+ {id:'pump',kind:'scam',app:'channel',npc:'guru',av:'#2f8fd8',sender:{en:"Penny Rocket 🚀",hi:"पेनी रॉकेट 🚀"},sub:{en:"Channel · 48K subscribers",hi:"चैनल · 48 हज़ार सब्सक्राइबर"},
+  msg:{en:"Operators are IN! Buy Gaya Infra (fictional) before 3 pm. Target 5x by Friday. Put in 250 coins now!",hi:"ऑपरेटर अंदर हैं! गया इन्फ़्रा (काल्पनिक) 3 बजे से पहले ख़रीदो। शुक्रवार तक 5 गुना। अभी 250 सिक्के लगाओ!"},
+  cta:{en:"Buy now",hi:"अभी ख़रीदें"},cd:11,loss:.25,delay:20,
+  checks:[['reg',{en:"The channel admin is not a registered adviser or research analyst.",hi:"चैनल एडमिन पंजीकृत सलाहकार या रिसर्च एनालिस्ट नहीं है।"}],['claim',{en:"Sudden hype on a tiny stock is the pump-and-dump pattern: insiders sell as soon as you buy.",hi:"छोटे शेयर पर अचानक हाइप पंप-एंड-डंप का तरीका है: आपके ख़रीदते ही अंदर वाले बेच देते हैं।"}]],
+  outcome:{en:"The price jumps for an hour, then crashes. The channel deletes the post.",hi:"भाव एक घंटे चढ़ा, फिर धड़ाम। चैनल ने पोस्ट डिलीट कर दी।"},
+  flags:[{en:"“Operators are in”",hi:"“ऑपरेटर अंदर हैं”"},{en:"“5x by Friday”",hi:"“शुक्रवार तक 5 गुना”"},{en:"A tiny, unknown stock",hi:"छोटा, अनजान शेयर"}],
+  right:{en:"5x by Friday? Sounds like pump-and-dump!",hi:"शुक्रवार तक 5 गुना? पंप-एंड-डंप लगता है!"}},
+ {id:'cousin',kind:'scam',app:'chat',npc:'cousin',av:'#e8508a',sender:{en:"Pinky Didi",hi:"पिंकी दीदी"},sub:{en:"Forwarded many times",hi:"कई बार फ़ॉरवर्ड किया गया"},
+  msg:{en:"Bhai see this!! Govt scheme doubles money in 90 days. Register with your bank details at g0vt-yojana.xyz 🙏",hi:"भाई ये देखो!! सरकारी योजना 90 दिन में पैसा डबल। g0vt-yojana.xyz पर बैंक डिटेल डालकर रजिस्टर करो 🙏"},
+  cta:{en:"Open & register",hi:"खोलें और रजिस्टर करें"},cd:0,loss:.2,delay:25,
+  checks:[['link',{en:"Government sites end in .gov.in. “g0vt-yojana.xyz” uses a zero in place of the letter o.",hi:"सरकारी साइटें .gov.in पर ख़त्म होती हैं। “g0vt-yojana.xyz” में o की जगह शून्य (0) है।"}],['claim',{en:"No government scheme doubles money in 90 days.",hi:"कोई सरकारी योजना 90 दिन में पैसा डबल नहीं करती।"}]],
+  outcome:{en:"The site steals your bank login. Pinky Didi meant well. She was fooled too.",hi:"साइट ने आपका बैंक लॉगिन चुरा लिया। पिंकी दीदी का इरादा बुरा नहीं था, वे भी झाँसे में आई थीं।"},
+  flags:[{en:"“Forwarded many times”",hi:"“कई बार फ़ॉरवर्ड”"},{en:"A lookalike web address",hi:"मिलता-जुलता वेब पता"},{en:"Asks for bank details",hi:"बैंक डिटेल माँगी"}],
+  right:{en:"Family sent it, but still check the link!",hi:"परिवार ने भेजा, फिर भी लिंक जाँचो!"}},
+ {id:'task',kind:'scam',app:'chat',npc:'cousin',av:'#25a865',sender:{en:"HR Priya · TaskPay",hi:"HR प्रिया · TaskPay"},sub:{en:"Unknown number",hi:"अनजान नंबर"},
+  msg:{en:"Part-time job! Earn 300 coins a day by liking videos. Pay 120 coins to ipay.taskvip@quickupi to unlock VIP tasks.",hi:"पार्ट-टाइम जॉब! वीडियो लाइक करके रोज़ 300 सिक्के कमाएँ। VIP टास्क खोलने के लिए ipay.taskvip@quickupi पर 120 सिक्के दें।"},
+  cta:{en:"Pay & unlock",hi:"भुगतान कर खोलें"},cd:12,loss:.18,delay:30,
+  checks:[['upi',{en:"ipay.taskvip@quickupi has no @valid tag and isn’t linked to any registered entity.",hi:"ipay.taskvip@quickupi में @valid नहीं है और यह किसी पंजीकृत संस्था से जुड़ा नहीं।"}],['claim',{en:"Real jobs pay you. They never ask you to pay before you start.",hi:"असली नौकरी आपको पैसे देती है, शुरू करने से पहले पैसे नहीं माँगती।"}]],
+  outcome:{en:"The first task pays 20 coins. Then they ask for bigger “VIP deposits”, and nothing comes back.",hi:"पहले टास्क पर 20 सिक्के मिले। फिर बड़ी “VIP जमा” माँगी गई, और कुछ वापस नहीं आया।"},
+  flags:[{en:"Easy money for likes",hi:"लाइक करके आसान कमाई"},{en:"Pay to unlock work",hi:"काम खोलने के लिए भुगतान"},{en:"Unknown UPI handle",hi:"अनजान UPI हैंडल"}],
+  right:{en:"A job that asks you to pay? Ulta hai yeh!",hi:"नौकरी जिसमें पैसे देने पड़ें? ये तो उल्टा है!"}},
+ {id:'fakereg',kind:'scam',app:'channel',npc:'officer',av:'#2f8fd8',sender:{en:"Alpha Wealth Advisory",hi:"अल्फ़ा वेल्थ एडवाइज़री"},sub:{en:"Channel · “SEBI Reg. INA000012345”",hi:"चैनल · “SEBI Reg. INA000012345”"},
+  msg:{en:"We are a SEBI-registered adviser (INA000012345). Join our premium calls for 200 coins a month. Accuracy 94%.",hi:"हम SEBI-पंजीकृत सलाहकार हैं (INA000012345)। 200 सिक्के महीने में हमारी प्रीमियम कॉल्स से जुड़ें। सटीकता 94%।"},
+  cta:{en:"Subscribe",hi:"सब्सक्राइब करें"},cd:12,loss:.25,delay:30,
+  checks:[['reg',{en:"INA000012345 belongs to a different firm. The name and number don’t match.",hi:"INA000012345 किसी दूसरी फ़र्म का है। नाम और नंबर मेल नहीं खाते।"}],['claim',{en:"Scammers copy real registration numbers. Match the name, number and contact details every time.",hi:"स्कैमर असली पंजीकरण नंबर कॉपी कर लेते हैं। हर बार नाम, नंबर और संपर्क विवरण मिलाएँ।"}]],
+  outcome:{en:"Their tips lose money, and the “refund” needs another fee.",hi:"उनकी टिप्स में नुकसान हुआ, और “रिफ़ंड” के लिए फिर फ़ीस माँगी।"},
+  flags:[{en:"A number alone proves nothing",hi:"सिर्फ़ नंबर से कुछ साबित नहीं होता"},{en:"Name and number don’t match",hi:"नाम और नंबर मेल नहीं खाते"},{en:"Accuracy claims",hi:"सटीकता के दावे"}],
+  right:{en:"There’s a number… but does the name match? Check!",hi:"नंबर तो है… पर नाम मिलता है? जाँचो!"}},
+ {id:'statement',kind:'legit',app:'sms',npc:'officer',av:'#5b6a8c',sender:{en:"Depository alert",hi:"डिपॉज़िटरी अलर्ट"},sub:{en:"Official SMS sender ID",hi:"आधिकारिक SMS सेंडर ID"},
+  msg:{en:"Monthly statement: your holdings did not change this month. We will never ask for your OTP or PIN. For questions, use the number on our official website.",hi:"मासिक स्टेटमेंट: इस महीने आपकी होल्डिंग्स में कोई बदलाव नहीं हुआ। हम कभी आपका OTP या PIN नहीं माँगेंगे। सवालों के लिए हमारी आधिकारिक वेबसाइट पर दिया नंबर इस्तेमाल करें।"},
+  cta:{en:"Got it",hi:"समझ गया"},cd:0,
+  checks:[['official',{en:"The sender ID matches the depository’s official alerts. No link, no request for money or OTP.",hi:"सेंडर ID डिपॉज़िटरी के आधिकारिक अलर्ट से मेल खाती है। कोई लिंक नहीं, पैसे या OTP की माँग नहीं।"},1],['claim',{en:"Genuine alerts inform you. They don’t rush you or ask for anything.",hi:"असली अलर्ट जानकारी देते हैं। जल्दबाज़ी नहीं कराते, कुछ नहीं माँगते।"},1]],
+  outcome:{en:"Nothing to do. Your holdings are safe.",hi:"कुछ करने की ज़रूरत नहीं। आपकी होल्डिंग्स सुरक्षित हैं।"},
+  flags:[{en:"No link, no request",hi:"न लिंक, न माँग"},{en:"Calm tone, no deadline",hi:"शांत भाषा, कोई डेडलाइन नहीं"}],
+  right:{en:"Calm message, no link, no money asked. Still, a quick check!",hi:"शांत मैसेज, न लिंक, न पैसे की माँग। फिर भी, एक बार जाँच लो!"}},
+ {id:'sip',kind:'legit',app:'kalyan',npc:'courier',av:'#2f6fb0',sender:{en:"Kalyan Securities (fictional)",hi:"कल्याण सिक्योरिटीज़ (काल्पनिक)"},sub:{en:"Your registered broker",hi:"आपका पंजीकृत ब्रोकर"},
+  msg:{en:"Your monthly savings of 100 coins into your Gullak is due. Pay to kalyansec.brk@validbank. You set this up yourself last month.",hi:"आपकी गुल्लक में 100 सिक्कों की मासिक बचत देय है। kalyansec.brk@validbank पर भुगतान करें। यह आपने ख़ुद पिछले महीने सेट किया था।"},
+  cta:{en:"Pay 100 coins",hi:"100 सिक्के दें"},cd:0,gullak:100,
+  checks:[['reg',{en:"Kalyan Securities is registered, and the name matches the number.",hi:"कल्याण सिक्योरिटीज़ पंजीकृत है, और नाम नंबर से मेल खाता है।"},1],['upi',{en:"kalyansec.brk@validbank carries the @valid tag used by registered intermediaries.",hi:"kalyansec.brk@validbank में पंजीकृत संस्थाओं वाला @valid टैग है।"},1]],
+  outcome:{en:"100 coins moved into your Gullak savings. Still yours, still growing.",hi:"100 सिक्के आपकी गुल्लक बचत में गए। अब भी आपके हैं, और बढ़ रहे हैं।"},
+  flags:[{en:"An @valid handle",hi:"@valid हैंडल"},{en:"A payment you set up yourself",hi:"भुगतान जो आपने ख़ुद सेट किया"}],
+  right:{en:"That handle has @valid. Looks okay, but check it anyway!",hi:"इस हैंडल में @valid है। ठीक लगता है, फिर भी जाँच लो!"}},
+ {id:'alert',kind:'legit',app:'sms',npc:'officer',av:'#5b6a8c',sender:{en:"Exchange investor alert",hi:"एक्सचेंज निवेशक अलर्ट"},sub:{en:"Official SMS sender ID",hi:"आधिकारिक SMS सेंडर ID"},
+  msg:{en:"Beware of chat-group tips that promise sure returns. Check an adviser’s registration before you invest. Report fraud on 1930.",hi:"पक्के रिटर्न का वादा करने वाली चैट-ग्रुप टिप्स से सावधान। निवेश से पहले सलाहकार का पंजीकरण जाँचें। धोखाधड़ी की शिकायत 1930 पर करें।"},
+  cta:{en:"Noted",hi:"नोट किया"},cd:0,
+  checks:[['official',{en:"The sender ID matches the exchange’s official alerts.",hi:"सेंडर ID एक्सचेंज के आधिकारिक अलर्ट से मेल खाती है।"},1],['claim',{en:"It only gives a warning. No link, no money asked.",hi:"यह सिर्फ़ चेतावनी है। न लिंक, न पैसे की माँग।"},1]],
+  outcome:{en:"Good advice, and it cost you nothing.",hi:"अच्छी सलाह, और कोई क़ीमत नहीं।"},
+  flags:[{en:"Warns, doesn’t sell",hi:"चेतावनी देता है, कुछ बेचता नहीं"},{en:"No link, no deadline",hi:"न लिंक, न डेडलाइन"}],
+  right:{en:"A warning, not a sale. Still, a quick check!",hi:"यह चेतावनी है, बिक्री नहीं। फिर भी, एक बार जाँच लो!"}}
+];
+/* ---------- levels, cities and decision cards (added) ---------- */
+const CITYNOTE={en:"This city is on the route because police and studies have reported this kind of fraud there. Most people here are honest, and many are victims too.",hi:"यह शहर रास्ते में इसलिए है क्योंकि पुलिस और अध्ययनों में यहाँ इस तरह की धोखाधड़ी की रिपोर्ट आई है। यहाँ के ज़्यादातर लोग ईमानदार हैं, और कई तो ख़ुद इसके शिकार हैं।"};
+const Y={en:"Yes",hi:"हाँ"},N={en:"No",hi:"नहीं"};
+const YNCARDS=[
+ {id:'fo1',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Options Desk (fictional)",hi:"ऑप्शंस डेस्क (काल्पनिक)"},sub:{en:"Practice trade · fictional index",hi:"प्रैक्टिस ट्रेड · काल्पनिक इंडेक्स"},
+  msg:{en:"Take this 10x leveraged trade? Put in 200 coins and control 2,000 coins of a fictional index. A 10% fall wipes out your 200.",hi:"क्या यह 10 गुना लीवरेज वाला ट्रेड लेंगे? 200 सिक्के लगाकर काल्पनिक इंडेक्स के 2,000 सिक्के सँभालें। 10% गिरावट से आपके 200 सिक्के साफ़।"},
+  cd:22,correct:'no',yes:{coins:-200,text:{en:"The index slipped 10% and your 200 coins vanished. Leverage turns a small dip into a total loss.",hi:"इंडेक्स 10% गिरा और आपके 200 सिक्के ग़ायब। लीवरेज छोटी गिरावट को पूरा नुकसान बना देता है।"}},no:{coins:0,text:{en:"You kept your 200 coins. The index slipped 10% that week.",hi:"आपके 200 सिक्के बचे रहे। उस हफ़्ते इंडेक्स 10% गिरा।"}},
+  fact:{en:"SEBI’s FY26 study: about 89% of individual F&O traders under 30 lost money.",hi:"SEBI का FY26 अध्ययन: 30 से कम उम्र के लगभग 89% व्यक्तिगत F&O ट्रेडर्स को नुकसान हुआ।"},
+  flags:[{en:"Leverage multiplies losses as well as gains",hi:"लीवरेज नुकसान को भी उतना ही बढ़ाता है"},{en:"A small dip can erase all your money",hi:"छोटी गिरावट सारा पैसा मिटा सकती है"}],
+  hintRight:{en:"Squawk! 10x means a small dip wipes you out. Think twice!",hi:"टें-टें! 10 गुना यानी छोटी गिरावट में सब साफ़। दो बार सोचो!"},hintWrong:{en:"Big risk, big reward, bhai! Take it!",hi:"बड़ा रिस्क, बड़ा इनाम, भाई! ले लो!"}},
+ {id:'fo2',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Options Desk (fictional)",hi:"ऑप्शंस डेस्क (काल्पनिक)"},sub:{en:"Practice trade · fictional index",hi:"प्रैक्टिस ट्रेड · काल्पनिक इंडेक्स"},
+  msg:{en:"You lost 3 trades in a row. Double your next bet to win it all back?",hi:"आप लगातार 3 ट्रेड हार गए। सब वापस पाने के लिए अगला दाँव दोगुना करेंगे?"},
+  cd:22,correct:'no',yes:{coins:-240,text:{en:"The 4th trade lost too, and the doubled bet cost you 240 coins.",hi:"चौथा ट्रेड भी हारा और दोगुने दाँव में 240 सिक्के गए।"}},no:{coins:0,text:{en:"You stopped at three small losses and kept the rest of your coins.",hi:"आप तीन छोटे नुकसान पर रुक गए और बाक़ी सिक्के बचा लिए।"}},
+  fact:{en:"Chasing losses with bigger bets is how small accounts get wiped out.",hi:"नुकसान की भरपाई के लिए बड़े दाँव लगाना ही छोटे खाते साफ़ करता है।"},
+  flags:[{en:"A bigger bet doesn’t improve the odds",hi:"बड़ा दाँव मौक़े नहीं सुधारता"},{en:"Stop and rethink after losses",hi:"नुकसान के बाद रुककर सोचें"}],
+  hintRight:{en:"Doubling after losses? That’s a trap. Stop here!",hi:"नुकसान के बाद दोगुना दाँव? यह जाल है। यहीं रुको!"},hintWrong:{en:"Your luck must turn now. Double it!",hi:"अब तो क़िस्मत पलटेगी। दोगुना कर दो!"}},
+ {id:'fo3',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Options Desk (fictional)",hi:"ऑप्शंस डेस्क (काल्पनिक)"},sub:{en:"Rule of thumb · fictional",hi:"नियम · काल्पनिक"},
+  msg:{en:"A friend says: only trade F&O with money you can afford to lose completely, never rent or savings. Do you agree?",hi:"दोस्त कहता है: F&O में सिर्फ़ वही पैसा लगाओ जो पूरा खोना सह सको, किराया या बचत कभी नहीं। क्या आप सहमत हैं?"},
+  cd:22,correct:'yes',yes:{coins:0,text:{en:"You kept your rent coins out of it. When the trade lost, only spare coins were at risk.",hi:"आपने किराये के सिक्के अलग रखे। ट्रेड हारा तो सिर्फ़ फ़ालतू सिक्के दाँव पर थे।"}},no:{coins:-150,text:{en:"You used rent coins. The trade lost and 150 coins were gone.",hi:"आपने किराये के सिक्के लगाए। ट्रेड हारा और 150 सिक्के गए।"}},
+  fact:{en:"SEBI’s studies repeatedly find most retail F&O traders end with a net loss.",hi:"SEBI के अध्ययन बार-बार बताते हैं कि ज़्यादातर रिटेल F&O ट्रेडर्स का नतीजा नुकसान रहता है।"},
+  flags:[{en:"Only risk money you can afford to lose",hi:"वही पैसा जोखिम में डालें जो खो सकें"},{en:"Rent and savings stay out",hi:"किराया और बचत अलग रखें"}],
+  hintRight:{en:"Spare money only, bhai. Rent is sacred!",hi:"सिर्फ़ फ़ालतू पैसा, भाई। किराया पवित्र है!"},hintWrong:{en:"Rent money is just money. Go all in!",hi:"किराये का पैसा भी पैसा है। सब लगा दो!"}},
+ {id:'mf1',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Fund Desk (fictional)",hi:"फ़ंड डेस्क (काल्पनिक)"},sub:{en:"Compare two funds · fictional",hi:"दो फ़ंड की तुलना · काल्पनिक"},
+  msg:{en:"Fund A charges 0.5% a year. Fund B charges 2%. Both earn 8% before costs. Pick Fund A?",hi:"फ़ंड A साल में 0.5% ख़र्च लेता है, फ़ंड B 2%। दोनों ख़र्च से पहले 8% कमाते हैं। क्या आप फ़ंड A चुनेंगे?"},
+  cd:20,correct:'yes',yes:{coins:60,text:{en:"After 10 years, 1,000 coins grow to about 2,061 in Fund A and about 1,791 in Fund B. Costs ate roughly 270 coins.",hi:"10 साल बाद 1,000 सिक्के फ़ंड A में लगभग 2,061 और फ़ंड B में लगभग 1,791 हो जाते हैं। ख़र्च ने क़रीब 270 सिक्के खा लिए।"}},no:{coins:-60,text:{en:"You paid the higher fee. Over 10 years it cost you about 270 coins per 1,000 invested.",hi:"आपने ज़्यादा फ़ीस दी। 10 साल में हर 1,000 सिक्कों पर क़रीब 270 सिक्के ज़्यादा गए।"}},
+  fact:{en:"A small yearly fee compounds into a big gap over time.",hi:"साल की छोटी फ़ीस समय के साथ बड़ा अंतर बन जाती है।"},
+  flags:[{en:"Check the expense ratio",hi:"एक्सपेंस रेशियो देखें"},{en:"Fees compound just like returns",hi:"फ़ीस भी रिटर्न की तरह चक्रवृद्धि होती है"}],
+  hintRight:{en:"Lower fee, same return. Do the maths!",hi:"फ़ीस कम, रिटर्न वही। हिसाब लगाओ!"},hintWrong:{en:"2% sounds small. Both are the same, bhai!",hi:"2% तो छोटा लगता है। दोनों बराबर हैं, भाई!"}},
+ {id:'mf2',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Fund Desk (fictional)",hi:"फ़ंड डेस्क (काल्पनिक)"},sub:{en:"A friend’s tip · fictional",hi:"दोस्त की सलाह · काल्पनिक"},
+  msg:{en:"Rocket Fund gained 60% last year. Move all your coins into it?",hi:"रॉकेट फ़ंड पिछले साल 60% बढ़ा। अपने सारे सिक्के उसमें डाल दें?"},
+  cd:20,correct:'no',yes:{coins:-150,text:{en:"This year Rocket Fund fell 25%. Last year’s winner often isn’t next year’s.",hi:"इस साल रॉकेट फ़ंड 25% गिरा। पिछले साल का विजेता अक्सर अगले साल का नहीं होता।"}},no:{coins:0,text:{en:"You stayed put. Rocket Fund fell 25% this year.",hi:"आप अपनी जगह रहे। इस साल रॉकेट फ़ंड 25% गिरा।"}},
+  fact:{en:"Fund ads carry a warning that past performance may not continue.",hi:"फ़ंड के विज्ञापनों में चेतावनी होती है कि पिछला प्रदर्शन आगे भी रहे, यह ज़रूरी नहीं।"},
+  flags:[{en:"Past returns don’t guarantee future returns",hi:"पिछला रिटर्न आगे की गारंटी नहीं"},{en:"Don’t chase last year’s winner",hi:"पिछले साल के विजेता के पीछे न भागें"}],
+  hintRight:{en:"Last year’s star? Nobody can promise an encore!",hi:"पिछले साल का सितारा? दोबारा चमकने का वादा कोई नहीं कर सकता!"},hintWrong:{en:"60%! Obviously it will do it again. Jump in!",hi:"60%! ज़ाहिर है फिर करेगा। कूद पड़ो!"}},
+ {id:'mf3',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Fund Desk (fictional)",hi:"फ़ंड डेस्क (काल्पनिक)"},sub:{en:"One fund or many · fictional",hi:"एक फ़ंड या कई · काल्पनिक"},
+  msg:{en:"Put all your coins in a single-sector fund (fictional Mega Tech Fund)?",hi:"क्या सारे सिक्के एक ही सेक्टर वाले फ़ंड (काल्पनिक मेगा टेक फ़ंड) में लगा दें?"},
+  cd:20,correct:'no',yes:{coins:-150,text:{en:"The tech sector fell 30% and the whole fund went with it: about 150 coins lost.",hi:"टेक सेक्टर 30% गिरा और पूरा फ़ंड साथ गिरा: क़रीब 150 सिक्के गए।"}},no:{coins:0,text:{en:"You spread across sectors. The same tech dip touched only a small slice of your coins.",hi:"आपने कई सेक्टरों में बाँटा। वही टेक गिरावट आपके सिक्कों के छोटे हिस्से तक रही।"}},
+  fact:{en:"Diversification spreads risk so one bad sector can’t sink everything.",hi:"विविधता जोखिम बाँटती है, इसलिए एक ख़राब सेक्टर सब कुछ नहीं डुबोता।"},
+  flags:[{en:"Don’t put all coins in one basket",hi:"सारे सिक्के एक टोकरी में न रखें"},{en:"Spread across sectors",hi:"कई सेक्टरों में बाँटें"}],
+  hintRight:{en:"One sector, one basket. Spread it out!",hi:"एक सेक्टर, एक टोकरी। बाँट दो!"},hintWrong:{en:"Tech is the future. All in, bhai!",hi:"टेक ही भविष्य है। सब लगा दो, भाई!"}},
+ {id:'mf4',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Fund Desk (fictional)",hi:"फ़ंड डेस्क (काल्पनिक)"},sub:{en:"Monthly SIP · fictional",hi:"मासिक SIP · काल्पनिक"},
+  msg:{en:"The market is down 10%. Pause your monthly 100-coin SIP until it recovers?",hi:"बाज़ार 10% गिरा है। रिकवरी तक अपनी 100 सिक्कों की मासिक SIP रोक दें?"},
+  cd:20,correct:'no',yes:{coins:-80,text:{en:"You missed the cheap units. At a 10% lower price, 100 coins buys about 11% more units.",hi:"आपने सस्ती यूनिट्स गँवा दीं। 10% कम भाव पर 100 सिक्कों में क़रीब 11% ज़्यादा यूनिट्स मिलती हैं।"}},no:{coins:60,text:{en:"You kept investing. During the dip, your 100 coins bought about 11% more units.",hi:"आप निवेश करते रहे। गिरावट में आपके 100 सिक्कों ने क़रीब 11% ज़्यादा यूनिट्स ख़रीदीं।"}},
+  fact:{en:"Regular investing buys more units when prices are low and fewer when high.",hi:"नियमित निवेश में भाव कम हो तो ज़्यादा यूनिट्स और ज़्यादा हो तो कम यूनिट्स मिलती हैं।"},
+  flags:[{en:"Regular investing smooths out the ups and downs",hi:"नियमित निवेश उतार-चढ़ाव को सँभालता है"},{en:"Don’t react to every dip",hi:"हर गिरावट पर प्रतिक्रिया न दें"}],
+  hintRight:{en:"A dip means cheaper units. Keep the SIP going!",hi:"गिरावट यानी सस्ती यूनिट्स। SIP चालू रखो!"},hintWrong:{en:"Market falling? Pause and hide under the covers!",hi:"बाज़ार गिर रहा है? रुक जाओ और रज़ाई में छिप जाओ!"}},
+ {id:'fu1',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Report Card · Sunrise Foods (fictional)",hi:"रिपोर्ट कार्ड · सनराइज़ फ़ूड्स (काल्पनिक)"},sub:{en:"Practice read, not advice",hi:"पढ़ने का अभ्यास, सलाह नहीं"},
+  msg:{en:"Revenue up 40%. Profit: a loss of 90 coins. Debt: 5x its equity. Cash left for 4 months. Would you buy this fictional company?",hi:"आय 40% बढ़ी। मुनाफ़ा: 90 सिक्कों का घाटा। क़र्ज़: अपनी इक्विटी का 5 गुना। कैश सिर्फ़ 4 महीने का। क्या आप यह काल्पनिक कंपनी ख़रीदेंगे?"},
+  cd:18,correct:'no',yes:{coins:-180,text:{en:"Sales grew by cutting prices. The loss widened and it had to borrow more. Your coins fell by 180.",hi:"दाम घटाकर बिक्री बढ़ी। घाटा बढ़ा और और क़र्ज़ लेना पड़ा। आपके 180 सिक्के गए।"}},no:{coins:0,text:{en:"Good read: growth bought with losses and heavy debt is fragile.",hi:"अच्छा पढ़ा: घाटे और भारी क़र्ज़ से ख़रीदी गई बढ़त कमज़ोर होती है।"}},
+  fact:{en:"Revenue growth means little if the company loses money and runs short of cash.",hi:"कंपनी घाटे में हो और कैश घट रहा हो तो आय की बढ़त का मतलब कम है।"},
+  flags:[{en:"Revenue ▲ but profit is negative",hi:"आय ▲ पर मुनाफ़ा नकारात्मक"},{en:"Debt is much larger than equity",hi:"क़र्ज़ इक्विटी से बहुत ज़्यादा"}],
+  hintRight:{en:"Big debt and a loss. Read the whole card!",hi:"भारी क़र्ज़ और घाटा। पूरा कार्ड पढ़ो!"},hintWrong:{en:"Sales up 40%! Rocket ship. Buy!",hi:"बिक्री 40% ऊपर! रॉकेट है। ख़रीदो!"}},
+ {id:'fu2',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Report Card · Kalyan Textiles (fictional)",hi:"रिपोर्ट कार्ड · कल्याण टेक्सटाइल्स (काल्पनिक)"},sub:{en:"Practice read, not advice",hi:"पढ़ने का अभ्यास, सलाह नहीं"},
+  msg:{en:"Revenue up 8%. Profit up 10%. Debt: 0.3x equity. Profitable for 5 years in a row. Would you buy this fictional company?",hi:"आय 8% बढ़ी। मुनाफ़ा 10% बढ़ा। क़र्ज़: इक्विटी का 0.3 गुना। लगातार 5 साल से मुनाफ़े में। क्या आप यह काल्पनिक कंपनी ख़रीदेंगे?"},
+  cd:18,correct:'yes',yes:{coins:90,text:{en:"Steady growth, steady profit and low debt are healthy numbers. Healthy isn’t guaranteed: price and risks still matter.",hi:"लगातार बढ़त, लगातार मुनाफ़ा और कम क़र्ज़ सेहतमंद संकेत हैं। सेहतमंद का मतलब गारंटी नहीं: भाव और जोखिम भी देखने होते हैं।"}},no:{coins:-60,text:{en:"You walked past a company with healthy numbers. Passing is safe, but reading the card should have told you more.",hi:"आप सेहतमंद आँकड़ों वाली कंपनी के पास से निकल गए। छोड़ना सुरक्षित है, पर कार्ड पढ़कर और समझ आता।"}},
+  fact:{en:"Look at revenue, profit and debt together, not any one number.",hi:"आय, मुनाफ़ा और क़र्ज़ को साथ देखें, किसी एक आँकड़े को नहीं।"},
+  flags:[{en:"Profit growing along with revenue",hi:"आय के साथ मुनाफ़ा भी बढ़ रहा"},{en:"Low debt, profit for 5 years",hi:"कम क़र्ज़, 5 साल से मुनाफ़ा"}],
+  hintRight:{en:"Calm, steady and low debt. Looks healthy!",hi:"शांत, स्थिर और कम क़र्ज़। सेहतमंद लगती है!"},hintWrong:{en:"Only 8% growth? Boring! Skip it!",hi:"सिर्फ़ 8% बढ़त? बोरिंग! छोड़ दो!"}},
+ {id:'fu3',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Report Card · Gaya Infra (fictional)",hi:"रिपोर्ट कार्ड · गया इन्फ़्रा (काल्पनिक)"},sub:{en:"Practice read, not advice",hi:"पढ़ने का अभ्यास, सलाह नहीं"},
+  msg:{en:"Revenue down 15%. Profit up 300%, because it sold a factory (one-time). Debt is rising. Would you buy this fictional company?",hi:"आय 15% घटी। मुनाफ़ा 300% बढ़ा, क्योंकि उसने एक फ़ैक्टरी बेची (एक बार की बात)। क़र्ज़ बढ़ रहा है। क्या आप यह काल्पनिक कंपनी ख़रीदेंगे?"},
+  cd:18,correct:'no',yes:{coins:-120,text:{en:"The profit jump was a one-off sale. Next year there was no factory left to sell, and your coins fell by 120.",hi:"मुनाफ़े की छलाँग एक बार की बिक्री से थी। अगले साल बेचने को फ़ैक्टरी नहीं बची और आपके 120 सिक्के गए।"}},no:{coins:0,text:{en:"Good read: profit from a one-time sale isn’t the business earning more.",hi:"अच्छा पढ़ा: एक बार की बिक्री से आया मुनाफ़ा कारोबार की कमाई नहीं है।"}},
+  fact:{en:"Ask why profit changed. One-time gains don’t repeat.",hi:"पूछें कि मुनाफ़ा क्यों बदला। एक बार के लाभ दोहराए नहीं जाते।"},
+  flags:[{en:"Profit jump from a one-time sale",hi:"मुनाफ़े की छलाँग एक बार की बिक्री से"},{en:"Revenue is falling",hi:"आय घट रही है"}],
+  hintRight:{en:"Why did profit jump? Check the reason!",hi:"मुनाफ़ा क्यों उछला? वजह जाँचो!"},hintWrong:{en:"Profit up 300%! Buy, buy, buy!",hi:"मुनाफ़ा 300% ऊपर! ख़रीदो, ख़रीदो!"}},
+ {id:'fu4',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Report Card · Heera Foods (fictional)",hi:"रिपोर्ट कार्ड · हीरा फ़ूड्स (काल्पनिक)"},sub:{en:"Practice read, not advice",hi:"पढ़ने का अभ्यास, सलाह नहीं"},
+  msg:{en:"Revenue up 15%. Profit up 18%. Debt: 0.2x equity. Cash flow matches reported profit. Would you buy this fictional company?",hi:"आय 15% बढ़ी। मुनाफ़ा 18% बढ़ा। क़र्ज़: इक्विटी का 0.2 गुना। कैश फ़्लो बताए गए मुनाफ़े से मेल खाता है। क्या आप यह काल्पनिक कंपनी ख़रीदेंगे?"},
+  cd:18,correct:'yes',yes:{coins:80,text:{en:"Profit that shows up as real cash, with low debt, is a good sign. Always check the price and the risks too.",hi:"जो मुनाफ़ा असली कैश में दिखे और क़र्ज़ कम हो, वह अच्छा संकेत है। भाव और जोखिम भी ज़रूर देखें।"}},no:{coins:-50,text:{en:"You passed on a healthy report card. Safe, but you could have read it with more confidence.",hi:"आपने सेहतमंद रिपोर्ट कार्ड छोड़ दिया। सुरक्षित है, पर और भरोसे से पढ़ सकते थे।"}},
+  fact:{en:"Cash flow matching profit is a sign the profit is real.",hi:"कैश फ़्लो का मुनाफ़े से मेल खाना संकेत है कि मुनाफ़ा असली है।"},
+  flags:[{en:"Cash flow matches profit",hi:"कैश फ़्लो मुनाफ़े से मेल खाता है"},{en:"Debt is low",hi:"क़र्ज़ कम है"}],
+  hintRight:{en:"Profit is real cash and debt is low. Good sign!",hi:"मुनाफ़ा असली कैश है और क़र्ज़ कम। अच्छा संकेत!"},hintWrong:{en:"Too good to be true. It must be a trap!",hi:"इतना अच्छा हो नहीं सकता। ज़रूर जाल है!"}}
+];
+const NEWSCAMS=[
+ {id:'jamtara',city:'jamtara',kind:'scam',app:'call',npc:'officer',av:'#1f8f7e',sender:{en:"Bank KYC Cell",hi:"बैंक KYC सेल"},sub:{en:"+91 8XXXX X5521 · calling",hi:"+91 8XXXX X5521 · कॉल आ रही है"},
+  msg:{en:"“Your bank KYC expires today and your account will be blocked. Tell me the OTP we just sent and I’ll update it.”",hi:"“आपकी बैंक KYC आज ख़त्म हो रही है और खाता ब्लॉक हो जाएगा। अभी भेजा गया OTP बताइए, मैं अपडेट कर दूँगा।”"},
+  cta:{en:"Share OTP",hi:"OTP बताएँ"},cd:11,loss:.35,delay:45,
+  checks:[['caller',{en:"It’s a personal mobile number, not your bank’s official line.",hi:"यह निजी मोबाइल नंबर है, आपके बैंक की आधिकारिक लाइन नहीं।"}],['claim',{en:"No bank asks for your OTP on a call. KYC is updated in the bank’s own app or branch.",hi:"कोई बैंक कॉल पर OTP नहीं माँगता। KYC बैंक के अपने ऐप या शाखा में अपडेट होती है।"}]],
+  outcome:{en:"With your OTP they empty your account within minutes.",hi:"आपके OTP से उन्होंने मिनटों में खाता ख़ाली कर दिया।"},
+  flags:[{en:"A threat: “account blocked today”",hi:"धमकी: “खाता आज ब्लॉक”"},{en:"Asks for your OTP",hi:"OTP माँगा"},{en:"A personal mobile number",hi:"निजी मोबाइल नंबर"}],
+  right:{en:"OTP? Kabhi nahi! Hang up and call the bank yourself!",hi:"OTP? कभी नहीं! फ़ोन काटो और बैंक को ख़ुद कॉल करो!"}},
+ {id:'deoghar',city:'deoghar',kind:'scam',app:'sms',npc:'courier',av:'#5b6a8c',sender:{en:"VK-DEMATKYC",hi:"VK-DEMATKYC"},sub:{en:"Text message",hi:"टेक्स्ट मैसेज"},
+  msg:{en:"Your demat account is blocked. Update KYC within 2 hours or it will be closed: kyc-depo-update.xyz/verify",hi:"आपका डीमैट खाता ब्लॉक है। 2 घंटे में KYC अपडेट करें वरना बंद हो जाएगा: kyc-depo-update.xyz/verify"},
+  cta:{en:"Open link",hi:"लिंक खोलें"},cd:12,loss:.3,delay:35,
+  checks:[['link',{en:"Real depository and broker sites don’t use random “.xyz” addresses. Open your broker’s own app instead.",hi:"असली डिपॉज़िटरी और ब्रोकर साइटें किसी भी “.xyz” पते पर नहीं होतीं। अपने ब्रोकर का ऐप ख़ुद खोलें।"}],['claim',{en:"A real KYC reminder doesn’t threaten closure in 2 hours or ask you to log in through an SMS link.",hi:"असली KYC रिमाइंडर 2 घंटे में बंद करने की धमकी नहीं देता और SMS लिंक से लॉगिन नहीं कराता।"}]],
+  outcome:{en:"The look-alike page copies your login and OTP. Your holdings are now at risk.",hi:"हूबहू दिखने वाला पेज आपका लॉगिन और OTP कॉपी कर लेता है। अब आपकी होल्डिंग्स ख़तरे में हैं।"},
+  flags:[{en:"A threat with a 2-hour deadline",hi:"2 घंटे की डेडलाइन के साथ धमकी"},{en:"A look-alike web address",hi:"मिलता-जुलता वेब पता"},{en:"Asks you to log in via a link",hi:"लिंक से लॉगिन माँगा"}],
+  right:{en:"A link in an SMS? Check the address first!",hi:"SMS में लिंक? पहले पता जाँचो!"}},
+ {id:'nuh',city:'nuh',kind:'scam',app:'chat',npc:'officer',av:'#6a8a5a',sender:{en:"Capt. Vikram (BazaarKart seller)",hi:"कैप्टन विक्रम (बाज़ारकार्ट विक्रेता)"},sub:{en:"Listing: Royal 350 bike · 18,000 coins",hi:"लिस्टिंग: रॉयल 350 बाइक · 18,000 सिक्के"},
+  msg:{en:"Selling my bike urgently. I’m posted with the Army and can’t meet. Pay 2,000 coins advance for packing and courier. Army transport will deliver.",hi:"बाइक जल्दी बेच रहा हूँ। मैं सेना में तैनात हूँ, मिल नहीं सकता। पैकिंग और कूरियर के लिए 2,000 सिक्के एडवांस दें। आर्मी ट्रांसपोर्ट डिलीवर करेगा।"},
+  cta:{en:"Pay advance",hi:"एडवांस दें"},cd:12,loss:.2,delay:30,
+  checks:[['listing',{en:"The seller profile is 2 days old, and the bike photos appear on other listings too.",hi:"विक्रेता की प्रोफ़ाइल 2 दिन पुरानी है और बाइक की फ़ोटो दूसरी लिस्टिंग में भी हैं।"}],['claim',{en:"Real sellers let you see the bike before you pay. “Army posting + advance for courier” is a common scam script.",hi:"असली विक्रेता पैसे लेने से पहले बाइक दिखाते हैं। “सेना में तैनाती + कूरियर के लिए एडवांस” स्कैम की जानी-पहचानी पटकथा है।"}]],
+  outcome:{en:"You paid the advance. Then comes a “customs fee”, and the seller disappears.",hi:"आपने एडवांस दिया। फिर “कस्टम फ़ीस” माँगी गई और विक्रेता ग़ायब।"},
+  flags:[{en:"Seller can’t meet you",hi:"विक्रेता मिल नहीं सकता"},{en:"Advance before you see the bike",hi:"बाइक देखने से पहले एडवांस"},{en:"An army identity used to build trust",hi:"भरोसे के लिए सेना की पहचान"}],
+  right:{en:"Pay before seeing the bike? Never, bhai!",hi:"बाइक देखे बिना पैसे? कभी नहीं, भाई!"}},
+ {id:'bharatpur',city:'bharatpur',kind:'scam',app:'call',npc:'officer',av:'#1f8f7e',sender:{en:"TradeZone Support (fictional)",hi:"ट्रेडज़ोन सपोर्ट (काल्पनिक)"},sub:{en:"+91 7XXXX X9930 · calling",hi:"+91 7XXXX X9930 · कॉल आ रही है"},
+  msg:{en:"“Your withdrawal failed. To fix it, install the ‘ScreenShare Helper’ app and read us the 9-digit code so we can see your screen.”",hi:"“आपका विदड्रॉल फ़ेल हो गया। ठीक करने के लिए ‘ScreenShare Helper’ ऐप इंस्टॉल करें और 9 अंकों का कोड बताएँ ताकि हम आपकी स्क्रीन देख सकें।”"},
+  cta:{en:"Install & share code",hi:"इंस्टॉल करें और कोड बताएँ"},cd:12,loss:.4,delay:50,
+  checks:[['support',{en:"The number came from a search result, not from the app’s own Help screen.",hi:"नंबर सर्च रिज़ल्ट से आया है, ऐप की अपनी Help स्क्रीन से नहीं।"}],['claim',{en:"Real support never asks for screen control. Remote-access apps let a stranger see your OTPs and bank apps.",hi:"असली सपोर्ट स्क्रीन का कंट्रोल कभी नहीं माँगता। रिमोट-एक्सेस ऐप से अजनबी आपके OTP और बैंक ऐप देख सकता है।"}]],
+  outcome:{en:"They watch your screen, read your OTP and empty your account.",hi:"वे आपकी स्क्रीन देखकर OTP पढ़ते हैं और खाता ख़ाली कर देते हैं।"},
+  flags:[{en:"An unrequested support call",hi:"बिन माँगी सपोर्ट कॉल"},{en:"Asks you to install a remote-access app",hi:"रिमोट-एक्सेस ऐप इंस्टॉल करने को कहा"},{en:"Number from a search result",hi:"नंबर सर्च रिज़ल्ट से"}],
+  right:{en:"Screen sharing with a stranger? Kabhi nahi!",hi:"अजनबी से स्क्रीन शेयर? कभी नहीं!"}},
+ {id:'kolkata',city:'kolkata',kind:'scam',app:'call',npc:'officer',av:'#1f8f7e',sender:{en:"BrokerCare Desk (fictional)",hi:"ब्रोकरकेयर डेस्क (काल्पनिक)"},sub:{en:"+91 33XX XX2210 · calling",hi:"+91 33XX XX2210 · कॉल आ रही है"},
+  msg:{en:"“Sir, there was a suspicious login on your trading account. To secure it, tell me your user ID and password and I’ll reset it now.”",hi:"“सर, आपके ट्रेडिंग खाते में संदिग्ध लॉगिन हुआ है। सुरक्षित करने के लिए अपना यूज़र ID और पासवर्ड बताइए, मैं अभी रीसेट कर दूँगा।”"},
+  cta:{en:"Share login",hi:"लॉगिन बताएँ"},cd:11,loss:.35,delay:45,
+  checks:[['caller',{en:"A broker’s support number is on its official website and app. This was a cold call.",hi:"ब्रोकर का सपोर्ट नंबर उसकी आधिकारिक वेबसाइट और ऐप पर होता है। यह बिन बुलाई कॉल थी।"}],['claim',{en:"No broker ever asks for your password, on a call, chat or email.",hi:"कोई ब्रोकर कभी आपका पासवर्ड नहीं माँगता, न कॉल पर, न चैट पर, न ईमेल पर।"}]],
+  outcome:{en:"With your login they sell your holdings and send the money out.",hi:"आपके लॉगिन से उन्होंने होल्डिंग्स बेचकर पैसा बाहर भेज दिया।"},
+  flags:[{en:"A cold call about a “problem”",hi:"“समस्या” के नाम पर बिन बुलाई कॉल"},{en:"Asks for your password",hi:"पासवर्ड माँगा"},{en:"An urgent security story",hi:"जल्दबाज़ी वाली सुरक्षा कहानी"}],
+  right:{en:"Password to a stranger? Kabhi nahi! Hang up!",hi:"अजनबी को पासवर्ड? कभी नहीं! फ़ोन काटो!"}},
+ {id:'ftips',city:'delhi',kind:'scam',app:'channel',npc:'guru',av:'#2f8fd8',sender:{en:"Nifty Sureshot Calls",hi:"निफ़्टी श्योरशॉट कॉल्स"},sub:{en:"Channel · 31K subscribers",hi:"चैनल · 31 हज़ार सब्सक्राइबर"},
+  msg:{en:"Guaranteed 10x on Nifty options this week! Sure-shot calls, 100% accuracy. Join today for 400 coins. Only 5 slots left.",hi:"इस हफ़्ते निफ़्टी ऑप्शंस में पक्का 10 गुना! श्योरशॉट कॉल्स, 100% सटीकता। आज ही 400 सिक्कों में जुड़ें। सिर्फ़ 5 स्लॉट बचे।"},
+  cta:{en:"Pay & join",hi:"भुगतान कर जुड़ें"},cd:11,loss:.3,delay:30,
+  checks:[['reg',{en:"The admin is not a registered investment adviser or research analyst.",hi:"एडमिन पंजीकृत निवेश सलाहकार या रिसर्च एनालिस्ट नहीं है।"}],['claim',{en:"Nobody can guarantee options returns, and most F&O traders lose money.",hi:"ऑप्शंस में रिटर्न की गारंटी कोई नहीं दे सकता, और ज़्यादातर F&O ट्रेडर्स को नुकसान होता है।"}]],
+  outcome:{en:"Their calls lose money, and leaving needs another “fee”.",hi:"उनकी कॉल्स में नुकसान हुआ और बाहर निकलने के लिए और “फ़ीस” माँगी गई।"},
+  flags:[{en:"“Guaranteed 10x”",hi:"“पक्का 10 गुना”"},{en:"“100% accuracy”",hi:"“100% सटीकता”"},{en:"“Only 5 slots left”",hi:"“सिर्फ़ 5 स्लॉट बचे”"}],
+  right:{en:"Guaranteed 10x in options? Jhooth! Verify karo!",hi:"ऑप्शंस में पक्का 10 गुना? झूठ! पहले जाँचो!"}},
+ {id:'jobfee',city:'delhi',kind:'scam',app:'chat',npc:'cousin',av:'#25a865',sender:{en:"HR Anjali · Apex Finserv (fictional)",hi:"HR अंजलि · एपेक्स फ़िनसर्व (काल्पनिक)"},sub:{en:"Unknown number",hi:"अनजान नंबर"},
+  msg:{en:"Congratulations! You are selected as Data Analyst, 45,000 coins a month. Pay 150 coins registration and training-kit fee to confirm your joining.",hi:"बधाई हो! आपका चयन डेटा एनालिस्ट के लिए हुआ, 45,000 सिक्के महीना। जॉइनिंग पक्की करने के लिए 150 सिक्के रजिस्ट्रेशन और ट्रेनिंग-किट फ़ीस दें।"},
+  cta:{en:"Pay fee",hi:"फ़ीस दें"},cd:12,loss:.15,delay:25,
+  checks:[['employer',{en:"The offer came from a free email and a chat number, not the company’s careers page.",hi:"ऑफ़र फ़्री ईमेल और चैट नंबर से आया, कंपनी के करियर पेज से नहीं।"}],['claim',{en:"A real employer never charges candidates a fee to join.",hi:"असली नियोक्ता जॉइन करने के लिए उम्मीदवार से फ़ीस नहीं लेता।"}]],
+  outcome:{en:"After the fee, they ask for a “laptop deposit” and then vanish.",hi:"फ़ीस के बाद “लैपटॉप डिपॉज़िट” माँगा गया और फिर वे ग़ायब।"},
+  flags:[{en:"Pay to get a job",hi:"नौकरी के लिए भुगतान"},{en:"Selected without an interview",hi:"बिना इंटरव्यू चयन"},{en:"Free email, no careers page",hi:"फ़्री ईमेल, कोई करियर पेज नहीं"}],
+  right:{en:"A job that asks you to pay? Ulta hai yeh!",hi:"नौकरी जिसमें पैसे देने पड़ें? ये तो उल्टा है!"}},
+ {id:'guar',kind:'scam',app:'channel',npc:'guru',av:'#2f8fd8',sender:{en:"SafeMax Growth Scheme (fictional)",hi:"सेफ़मैक्स ग्रोथ स्कीम (काल्पनिक)"},sub:{en:"Channel · “Mutual-fund style plan”",hi:"चैनल · “म्यूचुअल-फ़ंड जैसी योजना”"},
+  msg:{en:"Guaranteed 15% every year, zero risk! Better than any mutual fund. Put in 300 coins today.",hi:"हर साल पक्का 15%, कोई जोखिम नहीं! किसी भी म्यूचुअल फ़ंड से बेहतर। आज ही 300 सिक्के लगाएँ।"},
+  cta:{en:"Invest 300 coins",hi:"300 सिक्के लगाएँ"},cd:12,loss:.25,delay:25,
+  checks:[['reg',{en:"SafeMax isn’t on the list of registered mutual funds.",hi:"सेफ़मैक्स पंजीकृत म्यूचुअल फ़ंड की सूची में नहीं है।"}],['claim',{en:"Mutual funds can’t guarantee returns. “Guaranteed 15%, zero risk” is a red flag on its own.",hi:"म्यूचुअल फ़ंड रिटर्न की गारंटी नहीं दे सकते। “पक्का 15%, कोई जोखिम नहीं” अपने आप में ख़तरे का संकेत है।"}]],
+  outcome:{en:"The scheme stops paying after the first month and the channel disappears.",hi:"स्कीम पहले महीने के बाद भुगतान बंद कर देती है और चैनल ग़ायब हो जाता है।"},
+  flags:[{en:"“Guaranteed 15%”",hi:"“पक्का 15%”"},{en:"“Zero risk”",hi:"“कोई जोखिम नहीं”"},{en:"An unregistered scheme",hi:"अपंजीकृत स्कीम"}],
+  right:{en:"Zero risk and 15% guaranteed? Squawk! Not possible!",hi:"कोई जोखिम नहीं और 15% पक्का? टें-टें! नामुमकिन!"}}
+];
+CARDS.push(...NEWSCAMS,...YNCARDS);
+const LEVELS=[null,
+ {n:1,key:'scam',theme:{en:"Safety from scams",hi:"स्कैम से सुरक्षा"},route:['jamtara','deoghar','nuh','bharatpur'],cdMul:1.35,wrongN:1,speedAdd:0,
+  blurb:{en:"Starter level. Obvious red flags, generous timers, and Mithu is mostly right.",hi:"शुरुआती लेवल। साफ़ ख़तरे के संकेत, आराम का टाइमर, और मिट्ठू ज़्यादातर सही।"},
+  lines:[{en:"Decisions: Verify first, then Join, Pay, Walk away or Report.",hi:"फ़ैसले: पहले जाँचें, फिर जुड़ें, भुगतान करें, चले जाएँ या रिपोर्ट करें।"},{en:"Score = coins kept + Safe Streak points (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सेफ़ स्ट्रीक पॉइंट (+ टाइम बोनस, अधिकतम 20%)।"}]},
+ {n:2,key:'fno',theme:{en:"Futures & options",hi:"फ़्यूचर्स और ऑप्शंस"},route:['kolkata','delhi','gullakpur'],cdMul:1,wrongN:3,speedAdd:8,
+  blurb:{en:"Leverage traps and fake “broker support” calls. Shorter timers, and Mithu is wrong more often.",hi:"लीवरेज के जाल और नकली “ब्रोकर सपोर्ट” कॉल। छोटा टाइमर, और मिट्ठू अक्सर ग़लत।"},
+  lines:[{en:"Money decisions are quick Yes or No. No Verify there, but a scam can still show up. Then Verify comes back.",hi:"पैसों के फ़ैसले सीधे हाँ या नहीं। वहाँ Verify नहीं, पर स्कैम फिर भी आ सकता है। तब Verify लौट आता है।"},{en:"Score = coins kept + correct decisions (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सही फ़ैसले (+ टाइम बोनस, अधिकतम 20%)।"}]},
+ {n:3,key:'mf',theme:{en:"Mutual funds",hi:"म्यूचुअल फ़ंड"},route:['motiganj','sahkarpur','dhanpur'],cdMul:.9,wrongN:3,speedAdd:16,
+  blurb:{en:"Expense ratios, diversification and a “guaranteed scheme” scam. Mithu’s hints are a mix of true and false.",hi:"एक्सपेंस रेशियो, विविधता और एक “पक्की स्कीम” वाला स्कैम। मिट्ठू की सलाह में सच और झूठ मिले हैं।"},
+  lines:[{en:"Money decisions are quick Yes or No, and you see the cost or benefit in coins.",hi:"पैसों के फ़ैसले सीधे हाँ या नहीं, और सिक्कों में लागत या लाभ दिखता है।"},{en:"Score = coins kept + correct decisions (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सही फ़ैसले (+ टाइम बोनस, अधिकतम 20%)।"}]},
+ {n:4,key:'fund',theme:{en:"Fundamentals",hi:"फ़ंडामेंटल्स"},route:['kesarpur','chandanpur','heerapur'],cdMul:.75,wrongN:3,speedAdd:24,
+  blurb:{en:"Read the report card, then decide. A convincing deepfake appears. This is the tightest timer.",hi:"रिपोर्ट कार्ड पढ़ें, फिर तय करें। एक विश्वसनीय डीपफ़ेक आएगा। यहाँ टाइमर सबसे छोटा है।"},
+  lines:[{en:"Report-card decisions are Yes or No. The deepfake card brings Verify back.",hi:"रिपोर्ट कार्ड के फ़ैसले हाँ या नहीं। डीपफ़ेक कार्ड में Verify लौट आता है।"},{en:"Score = coins kept + correct decisions (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सही फ़ैसले (+ टाइम बोनस, अधिकतम 20%)।"}]}
+];
+function buildSched(n){
+  const S=(p,c)=>({p,c});
+  if(n===1){const legit=pick(['statement','sip','alert']),extra=pick(['tips','app','ipo','course','pump','cousin','task','fakereg','kyc']);
+    return[[S(.3,'jamtara'),S(.72,'deoghar')],[S(.3,legit),S(.72,'nuh')],[S(.3,extra),S(.7,'bharatpur')]]}
+  if(n===2){const yn=shuffle(['fo1','fo2','fo3']),tw=shuffle(['ftips','jobfee']);
+    return[[S(.25,'kolkata'),S(.52,yn[0]),S(.78,yn[1])],[S(.25,tw[0]),S(.52,tw[1]),S(.78,yn[2])]]}
+  if(n===3){const yn=shuffle(['mf1','mf2','mf3','mf4']);
+    return[[S(.3,yn[0]),S(.7,yn[1])],[S(.25,'guar'),S(.55,yn[2]),S(.8,yn[3])]]}
+  const yn=shuffle(['fu1','fu2','fu3','fu4']);
+  return[[S(.3,yn[0]),S(.7,yn[1])],[S(.25,'deepfake'),S(.55,yn[2]),S(.8,yn[3])]]}
+function prog(){const p=store.get('prog',null)||{};return Object.assign({unlocked:1,done:{},stars:{},best:{},carry:{}},p)}
+function saveProg(p){store.set('prog',p)}
+const cardById=id=>CARDS.find(c=>c.id===id);
+const nice=s=>s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+function cityLine(key){const t=TOWNS[key];return t&&t.rep?tx(t.rep):''}
+function cityTag(c){if(!c.city)return'';const t=TOWNS[c.city];return`<p class="kicker" style="font-size:12px;margin:0">${esc(LANG==='hi'?t.hi:nice(t.en))} · ${esc(tx(t.rep))}</p>`}
+APPS.sim={name:'MarketSim',col:'#2f6fb0'};
+Object.assign(CK,{listing:{en:"Listing check",hi:"लिस्टिंग जाँच"},support:{en:"Support-number check",hi:"सपोर्ट नंबर जाँच"},employer:{en:"Employer check",hi:"नियोक्ता जाँच"}});
+function stopNote(){const t=TOWNS[G.route[G.leg+1]];return t&&t.rep?`<p class="real"><b>${esc(tx(t.rep))}</b><br>${esc(tx(CITYNOTE))}</p>`:''}
+function starsHTML(n,cls){return`<span class="${cls}">${'★'.repeat(n)}<i>${'★'.repeat(3-n)}</i></span>`}
+
+const WRONG_SCAM=[{en:"Arre, my cousin’s friend doubled his money like this! Jaldi join karo!",hi:"अरे, मेरे कज़िन के दोस्त ने ऐसे ही पैसा डबल किया! जल्दी जॉइन करो!"},{en:"Everyone in my building is doing it. Must be safe!",hi:"मेरी बिल्डिंग में सब कर रहे हैं। सुरक्षित ही होगा!"},{en:"It looks so professional. There’s even a logo. Go for it!",hi:"कितना प्रोफ़ेशनल दिखता है। लोगो भी है। कर डालो!"},{en:"Hurry, hurry! Don’t miss out!",hi:"जल्दी, जल्दी! मौका मत गँवाओ!"}];
+const WRONG_LEGIT=[{en:"An unknown message? Must be a scam. Ignore it!",hi:"अनजान मैसेज? ज़रूर स्कैम है। अनदेखा करो!"},{en:"Every message is a scam these days. Block it!",hi:"आजकल हर मैसेज स्कैम होता है। ब्लॉक करो!"}];
+
+/* ---------- audio: chiptune + sfx ---------- */
+const AU={on:store.get('sound',true),ac:null};
+function audioInit(){
+  if(AU.ac){if(AU.ac.state==='suspended')AU.ac.resume();return}
+  try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ac=AU.ac=new AC();
+    AU.master=ac.createGain();AU.master.gain.value=AU.on?.55:0;AU.master.connect(ac.destination);
+    AU.lp=ac.createBiquadFilter();AU.lp.type='lowpass';AU.lp.frequency.value=16000;AU.mus=ac.createGain();AU.mus.gain.value=.3;AU.mus.connect(AU.lp);AU.lp.connect(AU.master);
+    AU.sfx=ac.createGain();AU.sfx.gain.value=.7;AU.sfx.connect(AU.master);
+    const n=ac.sampleRate;AU.noise=ac.createBuffer(1,n,n);const d=AU.noise.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+    AU.next=ac.currentTime+.1;AU.step=0;
+  }catch(e){AU.ac=null}
+}
+function setSound(on){AU.on=on;store.set('sound',on);if(AU.master)AU.master.gain.setTargetAtTime(on?.55:0,AU.ac.currentTime,.05)}
+function tone(type,f0,f1,dur,vol,dest,t0){const ac=AU.ac;if(!ac)return;const t=t0||ac.currentTime;const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(dest||AU.sfx);o.start(t);o.stop(t+dur+.03)}
+function noiz(dur,vol,ftype,freq,dest,t0){const ac=AU.ac;if(!ac)return;const t=t0||ac.currentTime;const s=ac.createBufferSource();s.buffer=AU.noise;const f=ac.createBiquadFilter();f.type=ftype;f.frequency.value=freq;const g=ac.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f);f.connect(g);g.connect(dest||AU.sfx);s.start(t,Math.random()*.5);s.stop(t+dur+.03)}
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+const LEAD=[74,0,76,0,78,0,76,0,74,0,71,0,74,0,0,0,76,0,78,0,81,0,78,0,76,0,74,0,76,0,0,0,78,0,81,0,83,0,81,0,78,0,76,0,74,0,0,0,76,0,74,0,71,0,69,0,71,0,74,0,0,0,0,0];
+const ROOTS=[50,47,43,45],CH=[[62,66,69],[59,62,66],[55,59,62],[57,61,64]];
+function musicTick(){const ac=AU.ac;if(!ac||ac.state!=='running')return;const sp=60/116/4;
+  while(AU.next<ac.currentTime+.15){const s=AU.step%64,bar=(s/16)|0,b=s%16,t=AU.next,M=AU.mus;
+    if(LEAD[s])tone('square',mtof(LEAD[s]),0,sp*1.8,.07,M,t);
+    if(b%2===0){const c=CH[bar];tone('square',mtof(c[(b/2)%3]+12),0,sp*.8,.022,M,t)}
+    if([0,3,6,8,11,14].includes(b))tone('triangle',mtof(ROOTS[bar]+(b===8?12:0)),0,sp*1.6,.16,M,t);
+    if(b===0||b===8||(bar===3&&b===10))tone('sine',140,42,.16,.42,M,t);
+    if(b===4||b===12)noiz(.12,.13,'bandpass',1900,M,t);
+    if(b%2===1)noiz(.035,.045,'highpass',7000,M,t);
+    if(b===6||b===14)tone('sine',330,210,.14,.09,M,t);
+    if(b===3||b===11)tone('triangle',990,700,.05,.05,M,t);
+    AU.next+=sp;AU.step++}}
+function duck(on){if(!AU.ac)return;AU.lp.frequency.setTargetAtTime(on?620:16000,AU.ac.currentTime,.12);AU.mus.gain.setTargetAtTime(on?.2:.3,AU.ac.currentTime,.2)}
+const SFX={
+ jump(){tone('square',380,760,.11,.07)},jump2(){tone('square',520,1100,.12,.06)},
+ coin(){const t=AU.ac&&AU.ac.currentTime;if(!t)return;tone('square',1320,0,.05,.045,null,t);tone('square',1760,0,.09,.045,null,t+.05)},
+ hit(){noiz(.2,.3,'lowpass',900);tone('sawtooth',170,55,.26,.12)},
+ buzz(){const t=AU.ac&&AU.ac.currentTime;if(!t)return;for(let i=0;i<3;i++){tone('square',170,0,.08,.07,null,t+i*.14);tone('square',172,0,.08,.04,null,t+i*.14)}},
+ beep(){tone('sine',880,0,.07,.06)},tick(){tone('sine',1600,0,.03,.03)},
+ good(){const t=AU.ac&&AU.ac.currentTime;if(!t)return;[72,76,79,84].forEach((m,i)=>tone('triangle',mtof(m),0,.18,.12,null,t+i*.07))},
+ bad(){const t=AU.ac&&AU.ac.currentTime;if(!t)return;[67,63,60,55].forEach((m,i)=>tone('square',mtof(m),0,.2,.06,null,t+i*.12))},
+ stamp(){noiz(.18,.35,'lowpass',500);tone('square',220,110,.14,.08)},
+ squawk(){const t=AU.ac&&AU.ac.currentTime;if(!t)return;tone('square',1300,650,.08,.04,null,t);tone('square',1500,800,.08,.04,null,t+.1)},
+ horn(v=.11){const t=AU.ac&&AU.ac.currentTime;if(!t)return;[311,370,466].forEach(f=>{const o=AU.ac.createOscillator(),g=AU.ac.createGain(),fl=AU.ac.createBiquadFilter();fl.type='lowpass';fl.frequency.value=1400;o.type='sawtooth';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v/3,t+.06);g.gain.setValueAtTime(v/3,t+.7);g.gain.exponentialRampToValueAtTime(.0001,t+1.1);o.connect(fl);fl.connect(g);g.connect(AU.sfx);o.start(t);o.stop(t+1.2)})},
+ thunder(){noiz(1.6,.35,'lowpass',260)},
+ fanfare(){const t=AU.ac&&AU.ac.currentTime;if(!t)return;[62,66,69,74,69,74,78,81].forEach((m,i)=>{tone('square',mtof(m),0,.22,.07,null,t+i*.11);tone('triangle',mtof(m-12),0,.22,.1,null,t+i*.11)})},
+ pop(){tone('square',600,200,.08,.05)}
+};
+function vibrate(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function speak(s){try{if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(s.replace(/[“”]/g,''));u.lang=LANG==='hi'?'hi-IN':'en-IN';u.rate=.98;speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- canvas & buffers ---------- */
+const cv=document.getElementById('game'),ctx=cv.getContext('2d');
+let VW=200,VH=400,S=2,GY=300,HX=60,INS={t:0,r:0,b:0,l:0};
+const BUF={};['cloud','far','mid','near','front','world'].forEach(k=>{const c=canvas(8,8);BUF[k]={c,x:c.getContext('2d')}});
+let vign=null,skyC=canvas(8,8),skyX=skyC.getContext('2d'),skyKey='',STARS=[],DITH=[];
+const tileCache={};
+function readInsets(){const cs=getComputedStyle(document.getElementById('probe'));INS={t:parseFloat(cs.paddingTop)||0,r:parseFloat(cs.paddingRight)||0,b:parseFloat(cs.paddingBottom)||0,l:parseFloat(cs.paddingLeft)||0}}
+function resize(){
+  const w=innerWidth,h=innerHeight;readInsets();
+  S=Math.max(2,Math.round(Math.min(w,h)/205));VW=Math.ceil(w/S);VH=Math.ceil(h/S);
+  cv.width=VW;cv.height=VH;cv.style.width=VW*S+'px';cv.style.height=VH*S+'px';
+  GY=Math.round(VH-Math.max(44,VH*(VW<VH?.14:.2)));HX=Math.round(VW*(VW<VH?.26:.22));
+  for(const k in BUF){BUF[k].c.width=VW;BUF[k].c.height=VH;BUF[k].x.imageSmoothingEnabled=false}
+  ctx.imageSmoothingEnabled=false;
+  vign=canvas(VW,VH);const vx=vign.getContext('2d');const g=vx.createRadialGradient(VW/2,VH*.45,Math.min(VW,VH)*.35,VW/2,VH*.45,Math.max(VW,VH)*.75);g.addColorStop(0,'rgba(6,3,14,0)');g.addColorStop(1,'rgba(6,3,14,.5)');vx.fillStyle=g;vx.fillRect(0,0,VW,VH);
+  STARS=[];for(let i=0;i<Math.round(VW*VH/900);i++)STARS.push({x:rnd()*VW|0,y:rnd()*GY*.75|0,s:rnd()<.12?2:1,p:rnd()*6});
+  DITH=[];for(let l=0;l<=16;l++){const c=canvas(4,4),x=c.getContext('2d');x.fillStyle='#07040e';for(let i=0;i<16;i++)if(BAYER[i]<l)x.fillRect(i%4,(i/4)|0,1,1);DITH.push(ctx.createPattern(c,'repeat'))}
+  skyKey='';for(const k in tileCache)delete tileCache[k];
+  const pw=document.getElementById('panel-wrap');
+  document.documentElement.style.setProperty('--dockmax',Math.max(220,GY*S-70-INS.t)+'px');
+  if(!pw.classList.contains('modal')&&!pw.hidden)pw.className=VW<VH?'top':'right';
+  layoutTitle();
+}
+
+/* ---------- time of day ---------- */
+const SKY=[[0,'#060818','#141a3e','#0a0e2e',.55,1],[4.8,'#0b1030','#2a2450','#0a0e2e',.5,1],[5.8,'#2b2a66','#f08a6a','#3a2a6a',.3,.55],[6.8,'#4a7cc8','#ffc59a','#ffb070',.08,.08],[8.5,'#3d8ae0','#bfe4ff','#ffffff',0,0],[15.5,'#3a86d8','#cfeaff','#ffffff',0,0],[17.2,'#4a6ab8','#ffcf8a','#ff9a4a',.1,0],[18.2,'#3a3378','#ff7a5a','#7a3a6a',.22,.25],[19.2,'#171a46','#5a3a7a','#20184a',.4,.7],[20.5,'#070a22','#1c2250','#0a0e2e',.55,1],[24,'#060818','#141a3e','#0a0e2e',.55,1]];
+function envAt(hour,weather){hour=((hour%24)+24)%24;let i=0;while(i<SKY.length-2&&SKY[i+1][0]<=hour)i++;const a=SKY[i],b=SKY[i+1],t=(hour-a[0])/(b[0]-a[0]);
+  const e={hour,top:mix(a[1],b[1],t),hor:mix(a[2],b[2],t),amb:mix(a[3],b[3],t),ambA:lerp(a[4],b[4],t),night:lerp(a[5],b[5],t)};
+  if(weather==='rain'){e.top=mix(e.top,'#4a5468',.6);e.hor=mix(e.hor,'#7a8494',.55);e.amb=mix(e.amb,'#3a4558',.5);e.ambA=Math.max(e.ambA,.22)}
+  if(weather==='haze'){e.hor=mix(e.hor,'#e0d0b0',.45);e.top=mix(e.top,'#a8b4c8',.25)}
+  return e}
+function buildSky(env){const H=GY+2;if(skyC.width!==VW||skyC.height!==H){skyC.width=VW;skyC.height=H}const id=skyX.createImageData(VW,H),d=id.data,A=hex2rgb(env.top),B=hex2rgb(env.hor),Q=14;
+  for(let y=0;y<H;y++){const t=Math.pow(y/H,1.25),tf=t*Q,b=Math.floor(tf),fr=tf-b;for(let x=0;x<VW;x++){const thr=BAYER[(y&3)*4+(x&3)]/16+1/32,lv=Math.min(Q,fr>thr?b+1:b)/Q,o=(y*VW+x)*4;d[o]=lerp(A[0],B[0],lv);d[o+1]=lerp(A[1],B[1],lv);d[o+2]=lerp(A[2],B[2],lv);d[o+3]=255}}
+  skyX.putImageData(id,0,0)}
+
+/* ---------- game state ---------- */
+const LEG_LEN=2600,LEG_MIN=165,TARGET=18*60;
+let state='boot',G=null,E=null,lastTs=0,realT=0;
+const W={camX:0,ch:{cloud:[],far:[],mid:[],near:[]},nx:{cloud:0,far:0,mid:0,near:0},props:[],nextProp:0,obs:[],coins:[],parts:[],floats:[],hist:[],stations:[],nextObs:300,theme:'temple',weather:'clear',train:null,trainT:6,kites:[],birds:[],rain:[],flash:0,flashT:9,shake:0,banner:null,fade:0,fadeDir:0,fadeCb:null,boards:{}};
+const LAYERS=[{k:'cloud',par:.04},{k:'far',par:.12},{k:'mid',par:.35},{k:'near',par:.65}];
+const hero={y:0,vy:0,jumps:0,ground:true,run:0,inv:0,buf:0,coy:0};
+const mithu={x:0,y:0,f:0};
+let npc=null;
+
+function newGame(n){n=n||1;const lv=LEVELS[n],P=prog(),route=lv.route.slice(),sched=buildSched(n);
+  const total=sched.reduce((s,l)=>s+l.length,0),wrong=new Set(shuffle([...Array(total).keys()]).slice(0,lv.wrongN)),start=n===1?1000:Math.max(300,P.carry[n]||1000);
+  G={level:n,lv,route,nLegs:route.length-1,leg:0,sched,legEnc:0,wrong,encN:0,coins:start,shown:start,gullak:0,streak:0,points:0,clock:6*60,baseSpeed:96+lv.speedAdd,speedMul:1,dist:0,legStart:0,
+     stats:{scams:0,spotted:0,lost:0,verified:0,enc:0,encV:0,expired:0,flags:[],yn:0,ynOk:0,ynNet:0,good:0,mithu:0},ts:1,tsT:1,arriveT:0};
+  G.target=6*60+G.nLegs*LEG_MIN+20;
+  resetWorld(TOWNS[route[1]].theme,false);
+  W.weather='clear';
+  const st={a:-400,b:HX+170,boardX:HX+62,town:route[0]};W.stations=[st];addStationProps(st);
+  addArrivalStation();genLayers(true);
+}
+function resetWorld(theme,gen=true){W.camX=0;W.theme=theme;for(const k in W.ch){W.ch[k]=[];W.nx[k]=-40}W.props=[];W.nextProp=-60;W.obs=[];W.coins=[];W.parts=[];W.floats=[];W.hist=[];W.stations=[];W.nextObs=360;W.train=null;W.trainT=4;W.rain=[];hero.y=GY;hero.vy=0;hero.ground=true;hero.jumps=0;npc=null;
+  W.kites=[0,1,2].map(i=>({x:rr(.15,.85),y:rr(.12,.35),p:rr(0,6),c:pick(['#e8402a','#ffd23f','#3fd0b6','#e85aa8'])}));
+  W.birds=[0,1,2,3].map(()=>({x:rr(0,1),y:rr(.08,.3),v:rr(6,12),p:rr(0,6)}));
+  if(gen)genLayers(true)}
+function addArrivalStation(){const bx=G.legStart+LEG_LEN+HX+58;const st={a:bx-430,b:bx+150,boardX:bx,town:G.route[G.leg+1]};W.stations.push(st);addStationProps(st)}
+function addStationProps(st){const n=2+ri(0,1);for(let i=0;i<n;i++){const x=st.a+60+rnd()*(st.b-st.a-140);if(Math.abs(x-st.boardX)<30)continue;const k=pick(['porter','chaiwala','reader','student']);W.props.push({x,kind:'npc',spr:NPC[k],flip:rnd()<.5});}
+  W.props.push({x:st.a+30+rnd()*80,kind:'img',s:PROPS.bench()})}
+function stationAt(x){for(const s of W.stations)if(x>=s.a&&x<=s.b)return s;return null}
+function boardFor(town){if(W.boards[town])return W.boards[town];const T0=TOWNS[town];const hs=hiSprite(T0.hi,11,'#141014',null);const ew=textW(T0.en,2);const w=Math.max(ew,hs.width-4)+14,h=31;
+  const s=mkSprite(w,h+24,P=>{P.r(3,h,2,24,'#3a3a46');P.r(w-5,h,2,24,'#3a3a46');P.r(0,0,w,h,'#141014');P.r(1,1,w-2,h-2,'#f6c91c');P.r(2,2,w-4,1,'#141014');P.r(2,h-3,w-4,1,'#141014');P.ctx.drawImage(hs,Math.round((w-hs.width)/2)+1,1);P.txt(T0.en,Math.round((w-ew)/2),h-14,'#141014',2)},{shade:false});
+  W.boards[town]=s;return s}
+
+/* ---------- generation ---------- */
+function genLayers(prefill){const th=THEMES[W.theme];
+  for(const L of LAYERS){const arr=W.ch[L.k];const edge=W.camX*L.par+VW+30;
+    while(W.nx[L.k]<edge){let s,gap,y=0,abs=false;
+      if(L.k==='cloud'){s=genCloud();gap=ri(20,90);abs=true;y=Math.round(rr(.06,.42)*GY)}
+      else if(L.k==='far'){s=genFar(th);gap=ri(-6,18)}
+      else if(L.k==='mid'){s=genMid(th);gap=ri(-2,10)}
+      else {s=genNear(th);gap=ri(10,60)}
+      arr.push({x:W.nx[L.k],s,y,abs});W.nx[L.k]+=s.w+gap}
+    while(arr.length&&arr[0].x+arr[0].s.w<W.camX*L.par-40)arr.shift()}
+  // platform props
+  while(W.nextProp<W.camX+VW+60){const x=W.nextProp;const st=stationAt(x);if(st){W.nextProp=st.b+20;continue}
+    const r=rnd();let p;if(r<.32)p={x,kind:'img',s:PROPS.lamp()};else if(r<.45)p={x,kind:'img',s:PROPS.bench()};else if(r<.66)p={x,kind:'npc',spr:NPC[pick(['porter','chaiwala','reader','student'])],flip:rnd()<.5};else if(r<.74&&G){const km=Math.max(0,Math.round(((G?(G.nLegs-1-G.leg):0)*LEG_LEN+(LEG_LEN-(x-HX-(G?G.legStart:0))))/9));p={x,kind:'img',s:PROPS.milestone(km)}}else if(r<.86)p={x,kind:'img',s:PROPS.poster()};else p={x,kind:'img',s:PROPS.bin()};
+    W.props.push(p);W.nextProp+=ri(70,150)}
+  W.props=W.props.filter(p=>p.x>W.camX-80)}
+function spawnObstacles(){
+  if(!G)return attractObs();
+  while(W.nextObs<W.camX+VW+40){const x=W.nextObs;const d=x-HX-G.legStart;let ok=d>120&&d<LEG_LEN-460&&!stationAt(x)&&!stationAt(x+30);for(const e of G.sched[G.leg])if(Math.abs(d-e.p*LEG_LEN)<170)ok=false;
+    if(ok)placeObstacle(x);else if(rnd()<.5)coinLine(x,GY-9);
+    W.nextObs+=Math.max(120,rr(150,300)-G.leg*14)}}
+function attractObs(){while(W.nextObs<W.camX+VW+40){const x=W.nextObs;placeObstacle(x);W.nextObs+=rr(170,300)}}
+function placeObstacle(x){const kinds=['cow','dog','bags','trolley','hole','dog','bags'];const k=pick(kinds);let o;if(k==='hole')o={x,k,w:16,h:3};else{const s=OBS[k];o={x,k,s,w:s.w,h:s.h}}W.obs.push(o);
+  if(rnd()<.6){for(let i=0;i<5;i++)W.coins.push({x:x+o.w/2-26+i*13,y:GY-12-Math.sin(i/4*Math.PI)*34,p:rnd()*4})}else coinLine(x+o.w+50,rnd()<.4?GY-40:GY-9)}
+function coinLine(x,y){for(let i=0;i<5;i++)W.coins.push({x:x+i*11,y,p:rnd()*4})}
+
+/* ---------- particles & floats ---------- */
+function part(o){W.parts.push(Object.assign({vx:0,vy:0,g:0,life:.6,t:0,s:1,c:'#fff',w:false},o))}
+function floatText(s,col,x,y,k=1){W.floats.push({s,c:col,x,y,t:0,k})}
+function dust(x,y,n=3,c='#d8c8b0'){for(let i=0;i<n;i++)part({x:x+rr(-3,3),y,vx:rr(-30,-8),vy:rr(-18,-4),g:30,life:rr(.3,.6),c,w:true})}
+function burst(x,y,n,cols,sp=60,w=false,g=80){for(let i=0;i<n;i++){const a=rnd()*Math.PI*2,v=rr(.3,1)*sp;part({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-20,g,life:rr(.4,.9),c:pick(cols),w,s:rnd()<.3?2:1})}}
+
+/* ---------- update ---------- */
+function update(dt){
+  musicTick();realT+=dt;
+  if(G){G.ts+=(G.tsT-G.ts)*Math.min(1,dt*7)}
+  const ts=G?G.ts:1;
+  if(state==='title')updateAttract(dt);
+  else if(state==='run'||state==='encounter'||state==='arrive'||state==='end')updateRun(dt*ts,dt);
+  // particles
+  for(const p of W.parts){p.t+=dt;if(p.fly){const k=Math.min(1,p.t/p.life);const e=k*k*(3-2*k);p.x=lerp(p.x0,p.tx,e);p.y=lerp(p.y0,p.ty,e)-Math.sin(k*Math.PI)*p.arc;if(k>=1&&!p.done){p.done=1;p.onDone&&p.onDone()}}else{p.vy+=p.g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt}}
+  W.parts=W.parts.filter(p=>p.t<p.life);
+  for(const f of W.floats){f.t+=dt;f.y-=14*dt}W.floats=W.floats.filter(f=>f.t<1.3);
+  W.shake=Math.max(0,W.shake-dt*10);W.flash=Math.max(0,W.flash-dt*2.5);
+  if(G){const d=G.coins-G.shown;G.shown+=Math.sign(d)*Math.min(Math.abs(d),Math.max(60,Math.abs(d)*4)*dt);if(Math.abs(G.coins-G.shown)<.5)G.shown=G.coins}
+  if(W.banner){W.banner.t+=dt;if(W.banner.t>3.2)W.banner=null}
+  if(W.fadeDir){W.fade=clamp(W.fade+W.fadeDir*dt*2.4,0,1);if(W.fade>=1&&W.fadeDir>0){W.fadeDir=-1;const cb=W.fadeCb;W.fadeCb=null;cb&&cb()}else if(W.fade<=0&&W.fadeDir<0)W.fadeDir=0}
+  if(E)updateEncounter(dt);
+  if(npc)updateNpc(dt);
+  // weather
+  if(W.weather==='rain'&&state!=='title'){const n=Math.round(VW*dt*1.4);for(let i=0;i<n;i++)W.rain.push({x:rr(-20,VW+20),y:rr(-20,0),v:rr(220,300)});for(const r of W.rain)r.y+=r.v*dt*(G?Math.max(.35,G.ts):1),r.x-=r.v*.25*dt;W.rain=W.rain.filter(r=>{if(r.y>GY+rr(0,8)){if(rnd()<.3)part({x:r.x,y:GY+1,vx:rr(-12,12),vy:rr(-30,-10),g:200,life:.25,c:'#a8c0e0'});return false}return true});
+    W.flashT-=dt;if(W.flashT<0){W.flashT=rr(7,15);W.flash=RM?.2:.75;setTimeout(()=>SFX.thunder(),300)}}
+}
+function heroWX(){return W.camX+HX}
+function updateAttract(dt){const v=88;W.camX+=v*dt;W.titleClock=(W.titleClock||330)+dt*9;genLayers();spawnObstacles();
+  const ahead=W.obs.find(o=>o.x>heroWX()-4&&o.x-heroWX()<(o.k==='trolley'?40:30));if(ahead&&hero.ground&&rnd()<.5)doJump(true);
+  physics(dt);W.obs=W.obs.filter(o=>o.x>W.camX-40);W.coins=W.coins.filter(c=>c.x>W.camX-20);
+  for(const c of W.coins)if(!c.got&&Math.abs(c.x-heroWX())<8&&Math.abs(c.y-(hero.y-10))<12){c.got=1;burst(c.x-W.camX,c.y,4,['#ffd23f','#fff7c2'],40)}
+  W.coins=W.coins.filter(c=>!c.got);hero.run+=v*dt*.09;updateTrain(dt);updateSkyCritters(dt);
+  if(rnd()<dt*5)dust(heroWX()-4,GY,1);
+  // seasons of the title: cycle themes slowly
+  W.themeT=(W.themeT||0)+dt;if(W.themeT>16){W.themeT=0;W.theme=pick(Object.keys(THEMES))}
+}
+function physics(dt){
+  if(hero.buf>0)hero.buf-=dt;
+  hero.vy+=820*dt;hero.y+=hero.vy*dt;
+  if(hero.y>=GY){if(!hero.ground&&hero.vy>120)dust(heroWX(),GY,4);hero.y=GY;hero.vy=0;if(!hero.ground){hero.ground=true;hero.jumps=0;hero.coy=.08;if(hero.buf>0){hero.buf=0;doJump()}}}
+  else if(hero.ground){hero.ground=false}
+  if(hero.coy>0)hero.coy-=dt;
+  if(hero.inv>0)hero.inv-=dt;
+  mithu.f+=dt*8;
+}
+function doJump(silent){
+  if(hero.ground||hero.coy>0){hero.vy=-268;hero.ground=false;hero.coy=0;hero.jumps=1;if(!silent)SFX.jump();dust(heroWX(),GY,3);return true}
+  if(hero.jumps<2){hero.vy=-232;hero.jumps=2;if(!silent)SFX.jump2();burst(HX,hero.y-4,5,['#ffffff','#7fe0cf'],30);return true}
+  hero.buf=.12;return false}
+function updateRun(wdt,dt){
+  const rem=LEG_LEN-G.dist;
+  let v=(G.baseSpeed+G.leg*9+Math.min(12,G.dist/LEG_LEN*12))*G.speedMul;
+  if(state==='arrive'||rem<260)v=Math.min(v,Math.sqrt(2*150*Math.max(0,rem))+(rem>1?6:0));
+  if(state==='end')v=0;
+  G.speedMul+=(1-G.speedMul)*Math.min(1,dt*1.4);
+  const dx=Math.min(v*wdt,Math.max(0,rem));
+  W.camX+=dx;G.dist+=dx;G.clock+=dx*(LEG_MIN/LEG_LEN);
+  physics(wdt);
+  hero.run+=dx*.09;
+  if(dx>0){W.hist.push({x:heroWX(),y:hero.y});if(W.hist.length>400)W.hist.shift()}
+  genLayers();spawnObstacles();updateTrain(wdt);updateSkyCritters(wdt);
+  W.obs=W.obs.filter(o=>o.x>W.camX-40);W.coins=W.coins.filter(c=>c.x>W.camX-20&&!c.got);
+  if(hero.ground&&dx>0&&rnd()<wdt*6)dust(heroWX()-4,GY,1);
+  if(state==='run'){
+    // coins
+    for(const c of W.coins)if(Math.abs(c.x-heroWX())<8&&Math.abs(c.y-(hero.y-10))<13){c.got=1;G.coins+=5;G.shown+=5;SFX.coin();burst(c.x-W.camX,c.y,4,['#ffd23f','#fff7c2'],40)}
+    // obstacles
+    if(hero.inv<=0)for(const o of W.obs){const hb=OBDEF[o.k].hb;const ox=o.x+hb[0],oy=(o.k==='hole'?GY-2:GY-o.h)+hb[1];const hx=heroWX()-4,hy=hero.y-17,hw=8,hh=17;
+      if(hx<ox+hb[2]&&hx+hw>ox&&hy<oy+hb[3]&&hy+hh>oy){stumble(o);break}}
+    {const nx=G.sched[G.leg][G.legEnc];if(nx&&G.dist>=nx.p*LEG_LEN){G.legEnc++;startEncounter(nx)}}
+    if(rem<=.5)arrive();
+  }
+  if(state==='arrive'){G.arriveT+=dt;if(G.arriveT>1.1&&!G.stopShown){G.stopShown=true;if(G.leg<G.nLegs-1)openStop();else finish()}}
+}
+function stumble(o){hero.inv=1.3;G.speedMul=.45;G.clock+=5;W.shake=RM?0:3;SFX.hit();vibrate(40);floatText('+5 MIN','#ffb3bf',HX,hero.y-30);burst(HX,hero.y-8,8,['#ffffff','#ffd0a0','#c9b27a'],50);if(o.k==='hole')for(let i=0;i<6;i++)part({x:heroWX(),y:GY,vx:rr(-30,30),vy:rr(-60,-20),g:200,life:.4,c:'#6a8aba',w:true});G.stats.hits=(G.stats.hits||0)+1}
+function updateTrain(dt){W.trainT-=dt;if(!W.train&&W.trainT<0){const n=ri(5,9);W.train={x:-n*34-30,n,v:rr(40,70)*(rnd()<.5?1:-1)};if(W.train.v<0)W.train.x=VW+20;if(state!=='title')setTimeout(()=>SFX.horn(.04),200)}
+  if(W.train){W.train.x+=W.train.v*dt;if((W.train.v>0&&W.train.x>VW+20)||(W.train.v<0&&W.train.x<-W.train.n*34-40)){W.train=null;W.trainT=rr(18,30)}}}
+function updateSkyCritters(dt){for(const b of W.birds){b.x+=b.v*dt/VW;b.p+=dt*9;if(b.x>1.1){b.x=-.1;b.y=rr(.08,.3)}}}
+
+function arrive(){state='arrive';G.arriveT=0;G.stopShown=false;SFX.horn();hero.vy=0;
+  if(G.gullak>0){G.gullak=Math.round(G.gullak*1.06);G.gullakGrew=true;floatText('GULLAK +6%','#9ff0df',HX,hero.y-34)}else G.gullakGrew=false;
+  burst(HX+20,GY-30,10,['#ffd23f','#ff8a24','#ffffff'],50)}
+function nextLeg(){G.leg++;G.legEnc=0;G.legStart=W.camX;G.dist=0;G.stopShown=false;W.theme=TOWNS[G.route[G.leg+1]].theme;const r=rnd();W.weather=G.leg===0?'clear':r<.28?'rain':r<.42?'haze':'clear';W.rain=[];W.nextObs=W.camX+VW+80;addArrivalStation();state='run';banner();setPause(true)}
+function banner(){const a=TOWNS[G.route[G.leg]].en,b=TOWNS[G.route[G.leg+1]].en;W.banner={t:0,l1:'LEVEL '+G.level+'  LEG '+(G.leg+1)+' OF '+G.nLegs+(W.weather==='rain'?'  MONSOON':W.weather==='haze'?'  HAZE':''),l2:a+' > '+b}}
+
+/* ---------- encounters ---------- */
+function startEncounter(slot){
+  const card=cardById(slot.c),idx=G.encN++;G.stats.enc++;if(card.kind!=='yn')G.stats.encV++;if(card.kind==='scam')G.stats.scams++;
+  const wrong=G.wrong.has(idx),cdv=card.cd?Math.round(card.cd*G.lv.cdMul):0;
+  E={card,idx,phase:'intro',t:0,verified:false,wrong,hint:card.kind==='yn'?(wrong?card.hintWrong:card.hintRight):wrong?pick(card.kind==='scam'?WRONG_SCAM:WRONG_LEGIT):card.right,cd:cdv,cdLeft:cdv,lastTick:0,vt:0,shown:0};
+  state='encounter';G.tsT=.12;duck(true);SFX.buzz();vibrate([70,50,70]);setTimeout(()=>SFX.squawk(),500);
+  W.obs=W.obs.filter(o=>o.x<heroWX()-24);
+  npc={type:card.npc,x:VW+12,tx:HX+(VW<VH?42:64),st:'enter',t:0,reveal:false,stamp:0,alpha:1};
+  setPause(false);
+}
+function updateEncounter(dt){
+  E.t+=dt;
+  if(E.phase==='intro'&&E.t>.9){E.phase='msg';E.t=0;openPhone()}
+  if(E.phase==='msg'&&E.cd>0&&!paused){E.cdLeft-=dt;const s=Math.ceil(E.cdLeft);if(s!==E.lastTick){E.lastTick=s;if(s<=5&&s>0)SFX.tick();const b=document.getElementById('cd'),bar=document.getElementById('cdbar');if(b)b.textContent=Math.max(0,s)+'s';if(bar)bar.style.width=Math.max(0,E.cdLeft/E.cd*100)+'%'}if(E.cdLeft<=0)resolve('expire')}
+  if(E.phase==='verify'){E.vt+=dt;const n=E.card.checks.length;const k=Math.min(n,Math.floor(E.vt/.75));if(k>E.shown){E.shown=k;SFX.beep();renderPhone()}if(E.vt>n*.75+.35){E.phase='result';renderPhone();if(E.card.kind==='scam')SFX.bad();else SFX.good()}}
+}
+function updateNpc(dt){const n=npc;n.t+=dt;
+  if(n.st==='enter'){n.x+=(n.tx-n.x)*Math.min(1,dt*5);if(Math.abs(n.x-n.tx)<1){n.x=n.tx;n.st='idle'}}
+  if(n.st==='grab'){if(n.t>1.3&&!n.reveal){n.reveal=true;burst(n.x,GY-14,12,['#ffffff','#9a8ab8','#ff3b3b'],50);floatText('HA HA!','#ff5d73',n.x,GY-34)}if(n.t>2.1){n.st='flee';n.t=0}}
+  if(n.st==='flee'){n.x+=160*dt;if(n.x>VW+30)npc=null}
+  if(n.st==='leave'){n.x+=60*dt;if(n.x>VW+30)npc=null}
+  if(n.st==='revealLeave'){if(n.t>.5&&!n.reveal){n.reveal=true;burst(n.x,GY-14,10,['#ffffff','#9a8ab8'],40)}if(n.t>1.2){n.x+=70*dt;if(n.x>VW+30)npc=null}}
+  if(n.st==='caught'){if(n.t>.15&&!n.reveal)n.reveal=true;n.stamp=Math.min(1,n.stamp+dt*5);if(n.t>1.4){n.alpha-=dt*1.6;if(rnd()<.8)part({x:n.x+rr(-6,6),y:GY-rr(0,24),vx:rr(-10,10),vy:rr(-40,-10),g:-20,life:.6,c:pick(['#ff5d73','#3a8fff','#ffffff','#1c1a24'])});if(n.alpha<=0)npc=null}}
+  if(n.st==='wave'){if(n.t>1)n.st='leave'}
+}
+function doVerify(){if(!E||E.phase!=='msg'||E.card.kind==='yn')return;E.verified=true;E.phase='verify';E.vt=0;E.shown=0;G.clock+=2;G.stats.verified++;SFX.beep();renderPhone()}
+function resolve(action){
+  if(!E||E.phase==='outcome')return;const c=E.card;let res;
+  const followedWrong=E.wrong&&((c.kind==='scam'&&action==='trust')||(c.kind==='legit'&&(action==='ignore'||action==='report'))||(c.kind==='yn'&&(action==='yes'||action==='no')&&action!==c.correct));
+  if(followedWrong)G.stats.mithu++;
+  E.lost=0;E.delay=0;E.streakUp=false;E.broke=false;
+  E.act=action;E.dc=0;
+  if(c.kind==='yn'){
+    if(action==='expire'){res='ynSkip';npc.st='leave';npc.t=0;SFX.pop()}
+    else{const ok=action===c.correct,o=c[action];G.stats.yn++;E.dc=o.coins;G.coins=Math.max(0,G.coins+o.coins);G.stats.ynNet+=o.coins;
+      if(ok){res='ynOk';G.stats.ynOk++;G.streak++;G.points++;E.streakUp=true;SFX.good();floatText('+1','#3fd0b6',HX,hero.y-34);burst(HX,hero.y-10,10,['#3fd0b6','#b7fff1','#ffffff'],50)}
+      else{res='ynBad';if(G.streak>0)E.broke=true;G.streak=0;SFX.bad();vibrate([80,40,80]);W.shake=RM?0:3}
+      if(o.coins)floatText((o.coins>0?'+':'')+o.coins,o.coins>0?'#9ff0df':'#ff5d73',HX,hero.y-26);
+      npc.st='leave';npc.t=0}
+  }else if(c.kind==='scam'){
+    if(action==='trust'){res='lost';const loss=Math.max(40,Math.round(G.coins*c.loss));E.lost=loss;E.delay=c.delay;G.coins=Math.max(0,G.coins-loss);G.stats.lost+=loss;G.clock+=c.delay;if(G.streak>0)E.broke=true;G.streak=0;
+      SFX.bad();vibrate([120,60,120]);W.shake=RM?0:4;npc.st='grab';npc.t=0;flyCoins(loss);floatText('-'+loss,'#ff5d73',HX,hero.y-34);floatText('+'+c.delay+' MIN','#ffb3bf',HX,hero.y-26)}
+    else if(action==='report'){res='caught';G.stats.spotted++;G.streak++;G.points++;E.streakUp=true;SFX.stamp();setTimeout(()=>SFX.good(),250);npc.st='caught';npc.t=0;burst(HX,hero.y-10,14,['#3fd0b6','#b7fff1','#ffffff'],60);floatText('+1 SAFE','#3fd0b6',HX,hero.y-34)}
+    else if(action==='expire'){res='expired';G.stats.spotted++;G.stats.expired++;npc.st='revealLeave';npc.t=0;SFX.pop()}
+    else {res='ignored';G.stats.spotted++;npc.st='revealLeave';npc.t=0;SFX.pop()}
+    if(res!=='caught')G.stats.flags.push(c.id);else G.stats.flags.push(c.id);
+  }else{
+    if(action==='trust'){res=E.verified?'legitOk':'lucky';if(E.verified){G.streak++;G.points++;E.streakUp=true;floatText('+1 SAFE','#3fd0b6',HX,hero.y-34)}if(c.gullak){const m=Math.min(G.coins,c.gullak);G.coins-=m;G.gullak+=m;floatText('GULLAK +'+m,'#9ff0df',HX,hero.y-26)}SFX.good();npc.st='wave';npc.t=0}
+    else {res='missed';npc.st='leave';npc.t=0;SFX.pop()}
+  }
+  if((c.kind==='scam'&&res!=='lost')||(c.kind==='legit'&&(res==='legitOk'||res==='lucky'))||res==='ynOk')G.stats.good++;
+  E.res=res;E.phase='outcome';renderPhone();
+}
+function flyCoins(loss){const n=Math.min(16,Math.max(4,Math.round(loss/20)));const trailN=trailCount();for(let i=0;i<n;i++){const idx=Math.max(1,trailN-i);const p=trailPos(idx);part({fly:1,x0:p.x,y0:p.y,x:p.x,y:p.y,tx:npc?npc.x:VW,ty:GY-12,arc:rr(14,30),life:.55+i*.06,coin:1,c:'#ffd23f',onDone:()=>SFX.coin()})}}
+function trailCount(){return clamp(Math.round(G?G.shown/60:12),0,26)}
+function trailPos(i){const h=W.hist,idx=h.length-1-i*5;if(idx<0||!h.length)return{x:HX-i*6,y:GY-6};return{x:h[idx].x-W.camX,y:h[idx].y-6+Math.sin(realT*7+i*.8)*1.5}}
+function endEncounter(){if(!E)return;E=null;state='run';G.tsT=1;duck(false);hero.inv=Math.max(hero.inv,1);if(npc&&npc.st==='idle'){npc.st='leave'}closePanel();setPause(true);W.nextObs=Math.max(W.nextObs,W.camX+VW+60)}
+
+/* ---------- render ---------- */
+function render(){
+  const hour=state==='title'?(W.titleClock||330)/60:G?G.clock/60:6;
+  const env=envAt(hour,W.weather);
+  const key=Math.round(hour*30)+W.weather+VW+'x'+VH;if(key!==skyKey){skyKey=key;buildSky(env)}
+  const sh=W.shake>0?Math.round(rr(-W.shake,W.shake)):0;
+  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+  ctx.drawImage(skyC,0,0);ctx.fillStyle=env.hor;ctx.fillRect(0,GY+2,VW,VH);
+  drawSkyStuff(env);
+  const wx=BUF.world.x;wx.clearRect(0,0,VW,VH);
+  // layers with atmospheric perspective
+  const haze=W.weather==='haze'?.2:W.weather==='rain'?.12:0;
+  drawLayer('cloud',.04,env.hor,env,env.night>.5?.55:.3,null);
+  drawLayer('far',.12,env.hor,env,.5+haze,(b)=>{drawRidge(b,env);drawTrain(b,env)});
+  drawLayer('mid',.35,env.hor,env,.2+haze,null);
+  drawLayer('near',.65,env.hor,env,.07+haze*.6,null,drawWires);
+  const fx=BUF.front.x;fx.clearRect(0,0,VW,VH);
+  drawPlatform(fx,env);drawGround(fx);drawEntities(fx);drawForeground(fx);
+  if(env.ambA>0){fx.globalCompositeOperation='source-atop';fx.globalAlpha=env.ambA;fx.fillStyle=env.amb;fx.fillRect(0,0,VW,VH);fx.globalAlpha=1;fx.globalCompositeOperation='source-over'}
+  wx.drawImage(BUF.front.c,0,0);
+  ctx.drawImage(BUF.world.c,sh,0);
+  drawLights(env,sh);
+  drawFlyers();
+  drawWeather(env);
+  ctx.drawImage(vign,0,0);
+  if(W.flash>0){ctx.globalAlpha=W.flash*.6;ctx.fillStyle='#e8f0ff';ctx.fillRect(0,0,VW,VH);ctx.globalAlpha=1}
+  if(state==='title')drawTitle();else if(G)drawHUD();
+  drawFloats();
+  if(W.banner)drawBanner();
+  if(W.fade>0){const l=Math.round(W.fade*16);ctx.fillStyle=DITH[l];ctx.fillRect(0,0,VW,VH)}
+}
+const LFAC={far:.5,mid:.9,near:.95};
+function drawLayer(k,par,tint,env,a,pre,post){
+  const b=BUF[k].x;b.clearRect(0,0,VW,VH);pre&&pre(b);
+  const vis=[];for(const ch of W.ch[k]){const sx=Math.round(ch.x-W.camX*par);if(sx>VW||sx+ch.s.w<0)continue;const sy=ch.abs?ch.y:GY-ch.s.h+2;b.drawImage(ch.s.img,sx,sy);if(ch.s.light)vis.push([ch.s.light,sx,sy])}
+  post&&post(b,par);
+  b.globalCompositeOperation='source-atop';
+  if(a>0){b.globalAlpha=Math.min(.92,a);b.fillStyle=tint;b.fillRect(0,0,VW,VH)}
+  if(env.ambA>0){b.globalAlpha=env.ambA;b.fillStyle=env.amb;b.fillRect(0,0,VW,VH)}
+  if(env.night>.04&&LFAC[k]){b.globalCompositeOperation='lighter';b.globalAlpha=env.night*LFAC[k];for(const v of vis)b.drawImage(v[0],v[1],v[2])}
+  b.globalAlpha=1;b.globalCompositeOperation='source-over';
+  BUF.world.x.drawImage(BUF[k].c,0,0)}
+function drawRidge(b,env){const c1=mix('#5a5a86',env.hor,.35),c2=mix('#4a4a76',env.hor,.15);for(let x=0;x<VW;x++){const wx=x+W.camX*.06;const h=20+16*vnoise(wx*.011)+7*vnoise(wx*.05+9);b.fillStyle=c1;b.fillRect(x,GY-14-h,1,h+16);const wx2=x+W.camX*.09;const h2=10+10*vnoise(wx2*.017+40);b.fillStyle=c2;b.fillRect(x,GY-6-h2,1,h2+8)}}
+function drawTrain(b,env){const t=W.train;if(!t)return;const y=GY-30;for(let i=0;i<t.n;i++){const x=Math.round(t.x+i*34);if(x>VW||x<-40)continue;b.fillStyle='#3a5a9a';b.fillRect(x,y,32,8);b.fillStyle='#2a3a6a';b.fillRect(x,y+6,32,2);b.fillStyle='#8a94a8';b.fillRect(x,y-1,32,1);b.fillStyle='#d8c68a';for(let w=2;w<30;w+=4)b.fillRect(x+w,y+2,2,2)}const hx=t.v>0?Math.round(t.x+t.n*34):Math.round(t.x-12);b.fillStyle='#c8402a';b.fillRect(hx,y,12,8);b.fillStyle='#ffd23f';b.fillRect(hx+(t.v>0?10:0),y+3,2,2);b.fillStyle='#4a4a5a';b.fillRect(Math.round(t.x)-12,y+8,t.n*34+26,1)}
+function drawWires(b,par){const poles=W.ch.near.filter(c=>c.s.meta.pole).map(c=>({x:Math.round(c.x-W.camX*par)+5,y:GY-c.s.h+3}));for(let i=0;i<poles.length-1;i++){const a=poles[i],c=poles[i+1];if(c.x<0||a.x>VW)continue;for(const off of [-4,4]){b.fillStyle='#2a2838';const x0=a.x+off,x1=c.x+off,n=x1-x0;for(let s=0;s<=n;s++){const t=s/n;b.fillRect(x0+s,Math.round(a.y+lerp(0,c.y-a.y,t)+Math.sin(t*Math.PI)*7),1,1)}}}}
+function drawSkyStuff(env){
+  // stars
+  if(env.night>.05){for(const s of STARS){const tw=.5+.5*Math.sin(realT*2+s.p);ctx.globalAlpha=env.night*(.35+.65*tw)*(W.weather==='rain'?.2:1);ctx.fillStyle=s.s>1?'#fff7d8':'#cfd8ff';ctx.fillRect(s.x,s.y,s.s,s.s)}ctx.globalAlpha=1}
+  const h=env.hour;
+  // sun
+  if(h>5.4&&h<19.2&&W.weather!=='rain'){const p=(h-5.6)/13.2,x=VW*(.08+.84*p),y=GY*.82-Math.sin(clamp(p,0,1)*Math.PI)*GY*.62;
+    const g=ctx.createRadialGradient(x,y,2,x,y,60);g.addColorStop(0,'rgba(255,235,170,.55)');g.addColorStop(1,'rgba(255,200,120,0)');ctx.globalCompositeOperation='lighter';ctx.fillStyle=g;ctx.fillRect(x-60,y-60,120,120);
+    if(h<8||h>16.5){ctx.globalAlpha=.07;ctx.fillStyle='#ffd8a0';for(let i=0;i<6;i++){const a=realT*.03+i*1.05;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*300,y+Math.sin(a)*300+150);ctx.lineTo(x+Math.cos(a+.12)*300,y+Math.sin(a+.12)*300+150);ctx.fill()}ctx.globalAlpha=1}
+    ctx.globalCompositeOperation='source-over';
+    const low=h<7.5||h>16.8;const r=low?9:7;for(let j=-r;j<=r;j++){const k=Math.round(Math.sqrt(r*r-j*j));ctx.fillStyle=Math.abs(j)>r-2?(low?'#ffb15a':'#ffe39a'):(low?'#ffd27a':'#fff6d0');ctx.fillRect(Math.round(x)-k,Math.round(y)+j,k*2,1)}}
+  // moon
+  if((h>18.6||h<5.8)&&W.weather!=='rain'){const p=((h-18.6+24)%24)/11.2,x=VW*(.12+.76*p),y=GY*.7-Math.sin(clamp(p,0,1)*Math.PI)*GY*.5;const r=6;for(let j=-r;j<=r;j++){const k=Math.round(Math.sqrt(r*r-j*j));ctx.fillStyle='#f4f0dc';ctx.fillRect(Math.round(x)-k,Math.round(y)+j,k*2,1)}ctx.fillStyle=mix(env.top,env.hor,.3);for(let j=-r;j<=r;j++){const k=Math.round(Math.sqrt(r*r-j*j));ctx.fillRect(Math.round(x)-k+4,Math.round(y)+j-2,k*2,1)}
+    const g=ctx.createRadialGradient(x,y,2,x,y,30);g.addColorStop(0,'rgba(220,230,255,.25)');g.addColorStop(1,'rgba(220,230,255,0)');ctx.globalCompositeOperation='lighter';ctx.fillStyle=g;ctx.fillRect(x-30,y-30,60,60);ctx.globalCompositeOperation='source-over'}
+}
+function drawFlyers(){const env=null;const hour=state==='title'?(W.titleClock||330)/60:G?G.clock/60:6;const day=hour>8.5&&hour<17.5&&W.weather==='clear';
+  if(day)for(const k of W.kites){const x=Math.round(k.x*VW+Math.sin(realT*.7+k.p)*6),y=Math.round(k.y*GY+Math.sin(realT*1.3+k.p)*4);ctx.globalAlpha=.55;pixLine(ctx,x,y+3,x-40,y+70,'#ffffff');ctx.globalAlpha=1;ctx.fillStyle=k.c;ctx.fillRect(x-1,y-2,3,1);ctx.fillRect(x-2,y-1,5,2);ctx.fillRect(x-1,y+1,3,1);ctx.fillRect(x,y+2,1,1);ctx.fillStyle='#fff';ctx.fillRect(x,y-1,1,3);ctx.fillStyle=k.c;ctx.fillRect(x+Math.round(Math.sin(realT*4+k.p)),y+3,1,2)}
+  if(hour>6&&hour<19)for(const b of W.birds){const x=Math.round(b.x*VW),y=Math.round(b.y*GY),f=Math.sin(b.p)>0;ctx.fillStyle='#2a2238';ctx.fillRect(x,y,1,1);ctx.fillRect(x-1,y-(f?1:0),1,1);ctx.fillRect(x+1,y-(f?1:0),1,1);ctx.fillRect(x-2,y-(f?2:-1)*.5|0,1,1);ctx.fillRect(x+2,y-(f?2:-1)*.5|0,1,1)}}
+function inStationX(x){return !!stationAt(x)}
+function groundTile(kind){const th=THEMES[W.theme];const key=kind+W.theme+VH+'_'+GY;if(tileCache[key])return tileCache[key];const H=VH-GY+2,c=canvas(16,H),x=c.getContext('2d');
+  const st=kind==='station',top=st?'#b9665a':th.ground,edge=st?'#8a8c98':th.edge;
+  x.fillStyle=top;x.fillRect(0,0,16,6);x.fillStyle=shade(top,.25);x.fillRect(0,0,16,1);x.fillStyle=shade(top,-.2);x.fillRect(st?15:7,1,1,5);if(!st)x.fillRect(15,1,1,5);
+  if(st){x.fillStyle='#f2c230';x.fillRect(0,4,16,1);x.fillStyle='#c99a20';for(let i=0;i<16;i+=4)x.fillRect(i,4,2,1)}else{x.fillStyle=shade(top,-.1);x.fillRect(3,3,2,1);x.fillRect(11,2,2,1)}
+  x.fillStyle=edge;x.fillRect(0,6,16,7);x.fillStyle=shade(edge,.18);x.fillRect(0,6,16,1);x.fillStyle=shade(edge,-.3);x.fillRect(0,12,16,1);x.fillRect(8,7,1,5);
+  const gv='#2e2638';x.fillStyle=gv;x.fillRect(0,13,16,H-13);
+  for(let i=0;i<10;i++){x.fillStyle=pick(['#3e3448','#4a4054','#251e2e']);x.fillRect(rnd()*16|0,13+(rnd()*(H-13)|0),1,1)}
+  const rail=(y)=>{x.fillStyle='#5a3e2a';x.fillRect(1,y+2,5,3);x.fillRect(9,y+2,5,3);x.fillStyle='#3a2818';x.fillRect(1,y+4,5,1);x.fillRect(9,y+4,5,1);x.fillStyle='#5a5e6e';x.fillRect(0,y+1,16,1);x.fillStyle='#c8ccd8';x.fillRect(0,y,16,1)};
+  if(H>22)rail(17);if(H>34)rail(29);
+  for(let y=Math.max(36,13);y<H;y++){if(y>40){x.fillStyle='rgba(10,6,18,'+Math.min(.6,(y-40)/60)+')';x.fillRect(0,y,16,1)}}
+  tileCache[key]=c;return c}
+function drawGround(b){const x0=Math.floor(W.camX/16)*16;const st=groundTile('station'),sr=groundTile('street');for(let tx=x0;tx<W.camX+VW+16;tx+=16){const sx=Math.round(tx-W.camX);b.drawImage(inStationX(tx+8)?st:sr,sx,GY)}
+  for(const o of W.obs)if(o.k==='hole'){const sx=Math.round(o.x-W.camX);b.fillStyle='#1b1424';b.fillRect(sx+1,GY,o.w-2,4);b.fillRect(sx,GY+1,o.w,2);b.fillStyle='#3a5a8a';b.fillRect(sx+3,GY+2,o.w-6,1);b.fillStyle='#8ab0e0';b.fillRect(sx+5,GY+2,2,1)}}
+function drawPlatform(b,env){
+  // stations: canopy, pillars, board
+  for(const s of W.stations){const x0=Math.round(s.a-W.camX),x1=Math.round(s.b-W.camX);if(x1<0||x0>VW)continue;const ry=GY-70;
+    for(let px=s.a+18;px<s.b-6;px+=44){const sx=Math.round(px-W.camX);if(sx<-6||sx>VW+6)continue;b.fillStyle='#2f6a52';b.fillRect(sx,ry+4,3,70-4);b.fillStyle='#4f9a78';b.fillRect(sx,ry+4,1,66);b.fillStyle='#e9dfc3';b.fillRect(sx-1,ry+4,5,3);b.fillRect(sx-1,GY-3,5,3);b.fillStyle='#24203a';b.fillRect(sx+12,ry+5,1,6);b.fillStyle='#ffe7a8';b.fillRect(sx+11,ry+11,3,2)}
+    b.fillStyle='#6c7482';b.fillRect(x0,ry-6,x1-x0,6);b.fillStyle='#8d96a3';for(let x=x0;x<x1;x+=3)b.fillRect(x,ry-6,2,5);b.fillStyle='#b8c0ca';b.fillRect(x0,ry-7,x1-x0,1);
+    b.fillStyle='#e9dfc3';b.fillRect(x0,ry,x1-x0,3);for(let x=x0;x<x1;x+=6){b.fillRect(x+1,ry+3,4,1);b.fillRect(x+2,ry+4,2,1)}b.fillStyle='#2f6a52';b.fillRect(x0,ry+1,x1-x0,1);
+    const bd=boardFor(s.town);const bx=Math.round(s.boardX-W.camX-bd.w/2);b.drawImage(bd.img,bx,GY-bd.h+1)}
+  for(const p of W.props){const sx=Math.round(p.x-W.camX);if(sx>VW+20||sx<-40)continue;if(p.kind==='npc'){b.drawImage(p.flip?p.spr.l:p.spr.r,sx,GY-p.spr.h-1)}else b.drawImage(p.s.img,sx,GY-p.s.h+1)}
+}
+function drawEntities(b){
+  for(const o of W.obs){if(o.k==='hole')continue;const sx=Math.round(o.x-W.camX);b.fillStyle='rgba(10,6,18,.3)';b.fillRect(sx+2,GY,o.w-4,2);b.drawImage(o.s.img,sx,GY-o.h+1);if(o.k==='dog'&&((realT*1.5)|0)%2)text(b,'Z',sx+4,GY-o.h-6,'#ffffff',1,'l',null)}
+  for(const c of W.coins){const sx=Math.round(c.x-W.camX),f=COINF[((realT*8+c.p)|0)%4];b.drawImage(COIN[f],sx-3,Math.round(c.y-3+Math.sin(realT*4+c.p)*1))}
+  // npc
+  if(npc)drawNpc(b);
+  // coin trail (snake)
+  if(G&&state!=='title'){const n=trailCount();for(let i=n;i>=1;i--){const p=trailPos(i);const f=COINF[((realT*8+i)|0)%4];b.drawImage(COIN[f],Math.round(p.x-3),Math.round(p.y-3))}}
+  // hero shadow & hero
+  const hgt=GY-hero.y;b.fillStyle='rgba(10,6,18,.35)';const sw=Math.max(4,12-hgt/6);b.fillRect(Math.round(HX-sw/2),GY,Math.round(sw),2);
+  let f=HERO.idle;if(!hero.ground)f=HERO.jump;else if(state==='run'||state==='encounter'||state==='title'||(state==='arrive'&&G&&G.dist<LEG_LEN-1))f=[HERO.a,HERO.b,HERO.c,HERO.b][(hero.run|0)%4];
+  const bob=hero.ground&&(f===HERO.b)?-1:0;
+  if(!(hero.inv>0&&((realT*14)|0)%2))b.drawImage(f,HX-7,Math.round(hero.y-20+bob));
+  if(E&&E.phase==='intro'){const px=HX+4,py=Math.round(hero.y-34+Math.sin(realT*40)*1);b.drawImage(PHONE,px,py);b.fillStyle='#ffffff';if(((realT*8)|0)%2){b.fillRect(px-2,py+2,1,3);b.fillRect(px+8,py+2,1,3)}}
+  // mithu
+  const tx=HX-12+Math.sin(realT*1.3)*4,ty=hero.y-34+Math.sin(realT*2.1)*3;mithu.x+=(tx-mithu.x)*.12;mithu.y+=(ty-mithu.y)*.12;
+  b.drawImage(MITHU[((mithu.f)|0)%2],Math.round(mithu.x-5),Math.round(mithu.y-4));
+  // particles
+  for(const p of W.parts){const x=Math.round(p.w?p.x-W.camX:p.x),y=Math.round(p.y);if(p.coin){b.drawImage(COIN[COINF[((realT*10)|0)%4]],x-3,y-3);continue}b.globalAlpha=clamp(1-p.t/p.life,0,1);b.fillStyle=p.c;b.fillRect(x,y,p.s,p.s);b.globalAlpha=1}
+}
+function drawNpc(b){const n=npc;let spr=NPC[n.reveal?'thug':n.type];if(!spr)return;const x=Math.round(n.x-7),y=GY-spr.h+1+(n.st==='idle'?Math.round(Math.sin(realT*3)):0);
+  b.globalAlpha=clamp(n.alpha,0,1);
+  if(n.type==='influencer'&&!n.reveal){b.fillStyle='#fff6e0';const cx=x+8,cy=y+4;for(let a=0;a<24;a++){const t=a/24*Math.PI*2;b.fillRect(Math.round(cx+Math.cos(t)*9),Math.round(cy+Math.sin(t)*9),1,1)}}
+  if(n.type==='deepfake'&&!n.reveal){const j=RM?0:(rnd()<.12?ri(-2,2):0);b.globalAlpha=.55*n.alpha;b.drawImage(DF_R,x-1+j,y);b.drawImage(DF_B,x+1-j,y);b.globalAlpha=.85*n.alpha;b.drawImage(spr.l,x+j,y);b.fillStyle='rgba(10,20,40,.35)';for(let yy=y;yy<y+spr.h;yy+=2)b.fillRect(x,yy,spr.w,1);b.fillStyle='#57e6ff';b.globalAlpha=.25*n.alpha;b.beginPath();b.moveTo(x+7,GY+2);b.lineTo(x-4,y);b.lineTo(x+18,y);b.fill();b.globalAlpha=1}
+  else b.drawImage(n.st==='flee'||n.st==='leave'||n.st==='revealLeave'&&n.t>1.2?spr.r:spr.l,x,y);
+  b.globalAlpha=1;
+  if(n.st==='caught'){const on=((realT*8)|0)%2;b.fillStyle=on?'#ff3b4b':'#3a8fff';b.globalAlpha=.35;b.fillRect(x-8,y-6,spr.w+16,spr.h+8);b.globalAlpha=1;if(n.stamp>0){const s='BLOCKED',w=textW(s)+6;b.fillStyle='#ff5d73';b.fillRect(Math.round(n.x-w/2),y-12,w,9);b.fillStyle='#2a0710';b.fillRect(Math.round(n.x-w/2)+1,y-11,w-2,7);drawText(b,s,Math.round(n.x-w/2)+3,y-10,'#ff5d73')}}
+  if(n.st==='idle'||n.st==='enter'){const px=x+(spr===NPC.thug?2:0);if(((realT*3)|0)%2){b.fillStyle='#8ff7ff';b.fillRect(x+1,y+9,1,1)}}
+}
+function drawForeground(b){const par=1.28,base=Math.floor(W.camX*par/170);for(let i=base-1;i<base+Math.ceil(VW/170)+2;i++){const r=hash(i*7+3);if(r<-.1)continue;const sx=Math.round(i*170-W.camX*par+((r*60)|0));const y=VH;b.fillStyle='#120c1a';if(r>.5){b.fillRect(sx,y-26,3,26);b.fillRect(sx-2,y-26,7,2)}for(let g=0;g<9;g++){const gx=sx-8+g*3,gh=4+((hash(i*31+g)*3+3)|0);b.fillRect(gx,y-gh,1,gh);b.fillRect(gx+1,y-gh+2,1,gh-2)}if(r>.2&&r<.5){b.fillStyle='#ff8a1a';b.fillRect(sx+2,y-8,2,2);b.fillStyle='#ffd23f';b.fillRect(sx+6,y-6,2,2);b.fillStyle='#120c1a'}}}
+function drawLights(env,sh){
+  const n=env.night;if(n<.04)return;ctx.globalCompositeOperation='lighter';
+  const glow=(x,y,r,a,col='255,190,110')=>{const g=ctx.createRadialGradient(x,y,1,x,y,r);g.addColorStop(0,`rgba(${col},${a})`);g.addColorStop(1,`rgba(${col},0)`);ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)};
+  for(const p of W.props){if(p.kind!=='img'||!p.s.meta.lamp)continue;const sx=p.x-W.camX+p.s.meta.lamp[0]+sh,sy=GY-p.s.h+1+p.s.meta.lamp[1];if(sx<-40||sx>VW+40)continue;glow(sx,sy,24,.42*n);glow(sx,GY+2,18,.22*n)}
+  for(const ch of W.ch.near){if(!ch.s.meta.lamp)continue;const sx=ch.x-W.camX*.65+ch.s.meta.lamp[0]+sh,sy=GY-ch.s.h+2+ch.s.meta.lamp[1];if(sx<-30||sx>VW+30)continue;glow(sx,sy,16,.35*n)}
+  for(const s of W.stations){for(let px=s.a+18;px<s.b-6;px+=44){const sx=px-W.camX+12+sh;if(sx<-30||sx>VW+30)continue;glow(sx,GY-58,22,.4*n);glow(sx,GY+2,16,.2*n)}}
+  // hero phone glow & coin trail sheen
+  if(npc&&!npc.reveal&&(npc.st==='idle'))glow(npc.x-4,GY-13,10,.4*n,'140,240,255');
+  ctx.globalCompositeOperation='source-over';
+}
+function drawWeather(env){
+  if(W.weather==='rain'){ctx.fillStyle='rgba(168,192,224,.55)';for(const r of W.rain){const x=Math.round(r.x),y=Math.round(r.y);ctx.fillRect(x,y,1,3);ctx.fillRect(x-1,y+3,1,2)}}
+  if(W.weather==='haze'){const g=ctx.createLinearGradient(0,GY-80,0,GY);g.addColorStop(0,'rgba(230,214,180,0)');g.addColorStop(1,rgba(env.hor,.28));ctx.fillStyle=g;ctx.fillRect(0,GY-80,VW,80)}
+}
+function plate(x,y,w,h,a=.72){ctx.fillStyle=`rgba(14,9,28,${a})`;ctx.fillRect(x+2,y,w-4,h);ctx.fillRect(x,y+2,w,h-4);ctx.fillRect(x+1,y+1,w-2,h-2)}
+function fmtClock(m){m=Math.round(m);const h=((m/60)|0)%24,mm=m%60;return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0')}
+function fmtN(n){return Math.round(n).toLocaleString('en-IN')}
+function drawHUD(){
+  const t=Math.round(INS.t/S)+5,l=Math.max(5,Math.round(INS.l/S)+5),r=Math.max(5,Math.round(INS.r/S)+5);
+  const big=VW>=300?2:2;
+  const cs=fmtN(G.shown);const cw=10+textW(cs,big)+6;
+  plate(l-3,t-3,cw+24,18);ctx.drawImage(COIN[0],l,t+2);text(ctx,cs,l+10,t+1,G.shown<G.coins-1?'#9ff0df':G.shown>G.coins+1?'#ff8a9a':'#ffe39a',big);
+  ctx.drawImage(SHIELD,l+cw+1,t+2);text(ctx,String(G.streak),l+cw+10,t+3,'#b7fff1',1);
+  // clock
+  const pbw=Math.ceil(52/S);const cl=fmtClock(G.clock);const cx=VW-r-pbw-2;plate(cx-textW(cl,big)-14,t-3,textW(cl,big)+17,18);ctx.drawImage(CLOCKI,cx-textW(cl,big)-11,t+2);text(ctx,cl,cx,t+1,'#f5eddd',big,'r');
+  // route bar
+  const y=t+20,x0=l+2,x1=VW-r-2,w=x1-x0;plate(x0-4,y-5,w+8,state==='title'?0:13,.55);
+  ctx.fillStyle='#3a2f5c';ctx.fillRect(x0,y,w,2);
+  const prog=(G.leg+Math.min(1,G.dist/LEG_LEN))/G.nLegs;ctx.fillStyle='#ffc83a';ctx.fillRect(x0,y,Math.round(w*prog),2);
+  for(let i=0;i<=G.nLegs;i++){const dx=Math.round(x0+w*i/G.nLegs);const done=i<=G.leg+(G.dist>=LEG_LEN-1?1:0);ctx.fillStyle='#140c1e';ctx.fillRect(dx-2,y-2,5,6);ctx.fillStyle=done?'#ffc83a':'#5a4a8a';ctx.fillRect(dx-1,y-1,3,4)}
+  const hx=Math.round(x0+w*prog);ctx.drawImage(MITHU[0],hx-5,y-4);
+  const nx=TOWNS[G.route[Math.min(G.nLegs,G.leg+1)]].en;text(ctx,'> '+nx,x1,y+4,'#d8cdf0',1,'r');text(ctx,'LEVEL '+G.level+'/4',x0,y+4,'#ffc83a',1,'l');
+}
+function drawBanner(){const b=W.banner,t=b.t;const k=t<.4?t/.4:t>2.7?Math.max(0,(3.2-t)/.5):1;const y=Math.round(GY*.3);const h=30;const off=Math.round((1-k)*VW*.6)*(t<.4?-1:1);
+  ctx.fillStyle='rgba(14,9,28,.82)';ctx.fillRect(0,y,VW,h);ctx.fillStyle='#ffc83a';ctx.fillRect(0,y,VW,1);ctx.fillRect(0,y+h-1,VW,1);ctx.fillStyle='#ff8a24';ctx.fillRect(0,y+2,VW,1);ctx.fillRect(0,y+h-3,VW,1);
+  const k2=textW(b.l2,2)<VW-12?2:1;text(ctx,b.l1,VW/2+off,y+6,'#b9add6',1,'c');text(ctx,b.l2,VW/2+off,y+14,'#ffe39a',k2,'c')}
+function drawFloats(){for(const f of W.floats){ctx.globalAlpha=clamp(1.3-f.t,0,1);text(ctx,f.s,f.x,f.y,f.c,f.k,'c');ctx.globalAlpha=1}}
+let hiTitle=null;
+function drawTitle(){const L=logoLayout();drawLogo(L);if(hiTitle){const x=Math.round(VW/2-hiTitle.width/2),y=L.y+L.h+3;ctx.drawImage(hiTitle,x,y)}}
+function logoLayout(){const one=VW>VH&&43*5<=VW-20;let k;if(one)k=clamp(Math.floor((VW-24)/43),4,7);else k=clamp(Math.floor((VW-24)/19),4,9);const lines=one?['PAISA SAFAR']:['PAISA','SAFAR'];const lh=5*k,gap=Math.round(k*1.6);const h=lines.length*lh+(lines.length-1)*gap+Math.ceil(k/2)+2;const y=Math.round(INS.t/S)+(VW>VH?Math.round(VH*.08):Math.round(VH*.1));return{k,lines,lh,gap,h,y}}
+function drawLogo(L){const{k,lines,lh,gap,y}=L;const shine=((realT*60)%(VW+200))-100;const rows=['#fff3b0','#ffd84a','#ffb52e','#ff8a1e','#e8601a'];const dep=Math.ceil(k/2)+1;
+  lines.forEach((s,li)=>{const w=textW(s,k),x0=Math.round(VW/2-w/2),y0=y+li*(lh+gap)+Math.round(Math.sin(realT*2+li)*1);
+    const each=(fn)=>{let cx=x0;for(const ch of s){const g=GL[ch];if(g)for(let i=0;i<15;i++)if(g[i]==='1')fn(cx+(i%3)*k,y0+((i/3)|0)*k,(i/3)|0);cx+=4*k}};
+    each((px,py)=>{ctx.fillStyle='#140c1e';ctx.fillRect(px-2,py-2,k+4,k+4+dep)});
+    each((px,py)=>{for(let d=dep;d>0;d--){ctx.fillStyle=d>dep-2?'#5a1e0a':'#8a3410';ctx.fillRect(px,py+d,k,k)}});
+    each((px,py,row)=>{ctx.fillStyle=rows[row];ctx.fillRect(px,py,k,k);if(Math.abs(px-(shine+py*.6))<k*1.5){ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(px,py,k,k)}ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(px,py,k,1)});
+  })}
+
+/* ---------- DOM UI ---------- */
+const $=id=>document.getElementById(id);
+const PW=$('panel-wrap');let paused=false,pauseFrom=null;
+const ICON={
+ speaker:'<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 4h2v4H1zM3 3h1v6H3zM4 2h1v8H4zM5 1h1v10H5zM7 4h1v4H7zM9 2h1v1H9zM10 3h1v6h-1zM9 9h1v1H9z"/></svg>',
+ pause:'<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 1h3v10H2zM7 1h3v10H7z"/></svg>',
+ shield:'<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 1h10v6h-1v2H9v1H8v1H4v-1H3V9H2V7H1z"/><path class="in" d="M3 5h1v1h1v1h1V6h1V5h1V4h1v1H8v1H7v1H6v1H5V7H4V6H3z"/></svg>',
+ cross:'<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 1h10v10H1z"/><path class="in" d="M3 3h2v1h2V3h2v2H8v2h1v2H7V8H5v1H3V7h1V5H3z"/></svg>',
+ info:'<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 1h10v10H1z"/><path class="in" d="M5 2h2v2H5zM5 5h2v5H5z"/></svg>'};
+$('pause-btn').innerHTML=ICON.pause;
+function showPanel(html,mode,still){PW.hidden=false;PW.className=mode||(VW<VH?'top':'right');PW.innerHTML=html;if(still){const p=PW.querySelector('.panel');p&&p.classList.add('still')}const f=PW.querySelector('[data-focus]')||PW.querySelector('button');if(f&&matchMedia('(pointer:fine)').matches)setTimeout(()=>f.focus({preventScroll:true}),30)}
+function closePanel(){PW.hidden=true;PW.innerHTML='';try{speechSynthesis.cancel()}catch(e){}}
+function setPause(vis){$('pause-btn').hidden=!vis}
+function imgURL(c,scale){const o=canvas(c.width*scale,c.height*scale),x=o.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(c,0,0,o.width,o.height);return o.toDataURL()}
+const MITHU_URL=imgURL(MITHU[0],4);
+const VIDEO_URL=(()=>{const c=canvas(72,40),x=c.getContext('2d');x.imageSmoothingEnabled=false;const g=x.createLinearGradient(0,0,0,40);g.addColorStop(0,'#1a2a5a');g.addColorStop(1,'#0a1030');x.fillStyle=g;x.fillRect(0,0,72,40);x.fillStyle='#2a3a7a';for(let i=0;i<72;i+=9)x.fillRect(i,6,4,18);x.drawImage(NPC.officer.l,0,0,15,18,22,4,30,36);x.fillStyle='#d8402a';x.fillRect(0,33,72,7);x.fillStyle='#ffffff';drawText(x,'MUST WATCH',3,34,'#ffffff');x.fillStyle='rgba(120,230,255,.25)';for(let y=0;y<40;y+=2)x.fillRect(0,y,72,1);x.fillStyle='#ff3b6b';x.fillRect(36,22,6,1);return imgURL(c,5)})();
+
+function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function renderPhone(){if(!E)return;const c=E.card,app=APPS[c.app];let h=`<div class="panel phone" role="dialog" aria-label="${esc(tx(c.sender))}"><div class="ph-bar" style="--app:${app.col}"><span>${esc(app.name)} · ${esc(T('levelWord'))} ${G.level}/4</span><span class="clock">${fmtClock(G.clock)}</span></div><div class="ph-in">${cityTag(c)}`;
+  h+=`<div class="ph-who"><div class="ph-av" style="background:${c.av}">${esc(tx(c.sender).replace(/^[@“"]/,'').charAt(0))}</div><div class="ph-id"><b>${esc(tx(c.sender))}</b><small>${esc(tx(c.sub))}</small></div><button class="icon-btn" data-act="speak" aria-label="${esc(T('readAloud'))}" title="${esc(T('readAloud'))}">${ICON.speaker}</button></div>`;
+  const showMsg=E.phase!=='outcome';
+  if(showMsg&&c.app==='video')h+=`<div class="vid"><img src="${VIDEO_URL}" alt=""><span class="live">LIVE</span></div>`;
+  if(showMsg&&c.app==='call')h+=`<div class="call"><div class="ring">${esc(tx(c.sender).charAt(0))}</div><span>${esc(T('incoming'))}</span></div>`;
+  if(showMsg)h+=`<div class="bubble ${['profitmax','kalyan','sim'].includes(c.app)?'app':c.app}">${esc(tx(c.msg))}${c.meta?`<span class="meta">${esc(tx(c.meta))}</span>`:''}</div>`;
+  if(E.phase==='msg'){
+    if(E.cd>0)h+=`<div class="urg"><span>${esc(T(c.kind==='yn'?'decideIn':'offer'))}</span><b id="cd">${Math.max(0,Math.ceil(E.cdLeft))}s</b><i><em id="cdbar" style="width:${Math.max(0,E.cdLeft/E.cd*100)}%"></em></i></div>`;
+    h+=`<div class="mithu"><img src="${MITHU_URL}" alt=""><p><small>${esc(T('mithu'))}</small>${esc(tx(E.hint))}</p></div>`;
+    h+=c.kind==='yn'?`<div class="acts"><div class="two"><button class="btn safe" data-act="yes" data-focus>${esc(tx(Y))}</button><button class="btn" data-act="no">${esc(tx(N))}</button></div></div>`:`<div class="acts"><button class="btn safe${G.stats.verified===0&&E.idx===0?' pulse':''}" data-act="verify" data-focus>${ICON.shield}${esc(T('verify'))}</button><div class="two"><button class="btn" data-act="trust">${esc(tx(c.cta))}</button><button class="btn ghost" data-act="ignore">${esc(T('ignore'))}</button></div><p class="muted" style="font-size:13px;margin:0;text-align:center">${esc(T('verifyCost'))}</p></div>`;
+  }else if(E.phase==='verify'||E.phase==='result'){
+    h+=`<ul class="checks">`;c.checks.forEach((ck,i)=>{const done=E.phase==='result'||i<E.shown;const ok=!!ck[2];h+=`<li><span class="st ${done?(ok?'ok':'bad'):'scan'}">${done?(ok?'✓':'✕'):'?'}</span><div><b>${esc(tx(CK[ck[0]]))}</b><span>${done?esc(tx(ck[1])):esc(T('checking'))}</span></div></li>`});h+=`</ul>`;
+    if(E.phase==='result')h+=`<div class="acts two" style="display:grid;grid-template-columns:1fr 1fr;gap:9px"><button class="btn safe" data-act="report" data-focus>${esc(T('report'))}</button><button class="btn" data-act="trust">${esc(tx(c.cta))}</button></div>`;
+  }else if(E.phase==='outcome'){h+=outcomeHTML()}
+  h+=`</div></div>`;const first=!E.rendered;E.rendered=true;showPanel(h,null,!first)}
+function outcomeHTML(){const c=E.card,r=E.res;const V={lost:['bad',T('vLost'),ICON.cross],caught:['good',T('vCaught'),ICON.shield],ignored:['mid',T('vIgnored'),ICON.info],expired:['mid',T('vExpired'),ICON.info],legitOk:['good',T('vLegitOk'),ICON.shield],lucky:['mid',T('vLucky'),ICON.info],missed:['mid',T('vMissed'),ICON.info],ynOk:['good',T('vYnOk'),ICON.shield],ynBad:['bad',T('vYnBad'),ICON.cross],ynSkip:['mid',T('vYnSkip'),ICON.info]}[r];
+  let h=`<div class="verdict ${V[0]}" role="status">${V[2]}<span>${esc(V[1])}</span></div>`;
+  const chips=[];if(E.dc)chips.push(`<span class="chip ${E.dc>0?'pos':'neg'}">${E.dc>0?'+':'−'}${fmtN(Math.abs(E.dc))} ${esc(T('coins'))}</span>`);if(E.lost)chips.push(`<span class="chip neg">−${fmtN(E.lost)} ${esc(T('coins'))}</span>`);if(E.delay)chips.push(`<span class="chip neg">+${E.delay} ${esc(T('min'))}</span>`);if(E.streakUp)chips.push(`<span class="chip pos">${esc(T(c.kind==='yn'?'correctPlus':'streakPlus'))}</span>`);if(c.gullak&&r!=='missed')chips.push(`<span class="chip pos">Gullak +${c.gullak}</span>`);
+  if(chips.length)h+=`<div class="delta">${chips.join('')}</div>`;
+  let note='';if(c.kind==='yn')note=r==='ynSkip'?tx(c[c.correct].text):tx(c[E.act].text);else if(r==='lost')note=tx(c.outcome)+(E.broke?' '+T('streakBroken'):'');else if(r==='caught')note=T('itWasScam')+' '+T('nCaught');else if(r==='ignored')note=T('itWasScam')+' '+T('nIgnored');else if(r==='expired')note=T('itWasScam')+' '+T('nExpired');else if(r==='legitOk')note=tx(c.outcome);else if(r==='lucky')note=tx(c.outcome)+' '+T('nLucky');else note=T('nMissed');
+  h+=`<p class="note">${esc(note)}</p>`;
+  if(E.wrong)h+=`<p class="note" style="color:#8be59a">${esc(T('nMithuWrong'))}</p>`;
+  h+=`<h3>${esc(T(c.kind==='scam'?'redFlags':c.kind==='yn'?'keyPoints':'goodSigns'))}</h3><ul class="flags${c.kind==='scam'?'':' good'}">${c.flags.map(f=>`<li>${esc(tx(f))}</li>`).join('')}</ul>`;
+  if(c.kind==='yn')h+=`<p class="real"><b>${esc(tx(c.fact))}</b></p>`;
+  if(c.city)h+=`<p class="real"><b>${esc(LANG==='hi'?TOWNS[c.city].hi:nice(TOWNS[c.city].en))}:</b> ${esc(tx(TOWNS[c.city].rep))}. ${esc(tx(CITYNOTE))}</p>`;
+  if(r==='lost')h+=`<p class="real">${T('help')}</p>`;
+  h+=`<div class="acts"><button class="btn" data-act="continue" data-focus>${esc(T('cont'))}</button></div>`;return h}
+
+function openPhone(){renderPhone()}
+function openStop(){const town=TOWNS[G.route[G.leg+1]];
+  const can200=G.coins>=200,can80=G.coins>=80;
+  let h=`<div class="panel" role="dialog" aria-label="${esc(tx(town))}"><div class="board"><span class="hi">${esc(town.hi)}</span><span class="en">${esc(town.en)}</span></div>`;
+  h+=`<p class="kicker">${esc(T('stopOf',{n:G.leg+1,m:G.nLegs-1,t:fmtClock(G.clock)}))}</p><p>${esc(T('stopLead'))}</p>${stopNote()}<div class="choices">`;
+  h+=`<button class="choice" data-act="gig" data-focus><b>${esc(T('gig'))}</b><span>${esc(STR.gigs[LANG][G.leg%4])}</span><em class="fx"><i class="pos">+150 ${esc(T('coins'))}</i><i class="neg">+40 ${esc(T('min'))}</i></em></button>`;
+  h+=`<button class="choice" data-act="gullak"${can200?'':' disabled'}><b>${esc(T('gullakT'))}</b><span>${esc(T('gullakD'))}</span><em class="fx"><i class="neg">−200 ${esc(T('coins'))}</i><i class="pos">+6%</i></em></button>`;
+  h+=`<button class="choice" data-act="express"${can80?'':' disabled'}><b>${esc(T('expressT'))}</b><span>${esc(T('expressD'))}</span><em class="fx"><i class="neg">−80 ${esc(T('coins'))}</i><i class="pos">−45 ${esc(T('min'))}</i></em></button>`;
+  h+=`<button class="choice" data-act="move"><b>${esc(T('moveT'))}</b><span>${esc(T('moveD'))}</span><em class="fx"><i>±0</i></em></button></div>`;
+  if(G.gullak>0)h+=`<p class="muted">${esc(T('gullakHas',{n:fmtN(G.gullak)}))}${G.gullakGrew?' '+esc(T('gullakGrew')):''}</p>`;
+  h+=`<p class="muted" style="font-size:14px">${esc(T('next',{t:TOWNS[G.route[G.leg+2]].en}))}</p></div>`;
+  showPanel(h,'modal');setPause(false)}
+function stopChoice(a){if(a==='gig'){G.coins+=150;G.clock+=40;floatText('+150','#9ff0df',HX,hero.y-34);SFX.coin()}else if(a==='gullak'){if(G.coins<200)return;G.coins-=200;G.gullak+=200;floatText('GULLAK +200','#9ff0df',HX,hero.y-34);SFX.good()}else if(a==='express'){if(G.coins<80)return;G.coins-=80;G.clock=Math.max(G.clock-45,0);floatText('-45 MIN','#9ff0df',HX,hero.y-34);SFX.horn(.08)}closePanel();nextLeg()}
+function scoreOf(){const wealth=G.coins+G.gullak;const timeB=Math.round(Math.min(.2*wealth,Math.max(0,G.target-G.clock)*3));return{wealth,timeB,streak:G.points*50,total:Math.round(wealth+G.points*50+timeB)}}
+function starsOf(){const s=G.stats;const acc=s.enc?s.good/s.enc:1;return 1+(acc>=.7?1:0)+(s.good===s.enc?1:0)}
+function finish(){state='end';SFX.fanfare();setPause(false);for(let i=0;i<5;i++)setTimeout(()=>{burst(rr(VW*.2,VW*.8),rr(GY*.2,GY*.5),26,['#ffd23f','#ff8a24','#3fd0b6','#ff5d73','#ffffff'],90,false,40);SFX.pop()},i*280);
+  const sc=scoreOf(),st=starsOf(),P=prog(),n=G.level;
+  P.done[n]=true;P.stars[n]=Math.max(P.stars[n]||0,st);P.best[n]=Math.max(P.best[n]||0,sc.total);
+  if(n<4){P.unlocked=Math.max(P.unlocked,n+1);P.carry[n+1]=Math.max(300,sc.wealth)}
+  saveProg(P);G.final=sc;G.best=P.best[n];G.stars=st;setTimeout(openEnd,1500)}
+function openEnd(){const sc=G.final,s=G.stats,n=G.level;const B=TOWNS[G.route[G.nLegs]];
+  let h=`<div class="panel" role="dialog" aria-label="${esc(T('lvlComplete',{n}))}"><p class="kicker">${esc(T('arrived',{t:fmtClock(G.clock)}))} · ${esc(tx(G.lv.theme))}</p><h2>${esc(T('lvlComplete',{n}))}</h2><p class="muted" style="font-size:14px;margin:0">${esc(T('endT',{b:LANG==='hi'?B.hi:nice(B.en)}))}</p>`;
+  h+=`<div class="score-big"><b>${fmtN(sc.total)}</b>${starsHTML(G.stars,'starsbig')}</div><p class="muted" style="font-size:14px">${esc(T('best',{n:fmtN(G.best)}))}</p>`;
+  h+=`<dl class="tbl"><div><dt>${esc(T('eCoins'))}</dt><dd>${fmtN(G.coins)}</dd></div><div><dt>${esc(T('eGullak'))}</dt><dd>${fmtN(G.gullak)}</dd></div><div><dt>${esc(T(n===1?'eStreak':'eCorrect'))}</dt><dd>${fmtN(sc.streak)}</dd></div><div><dt>${esc(T('eTime'))}</dt><dd>${fmtN(sc.timeB)}</dd></div><div class="tot"><dt>${esc(T('eTotal'))}</dt><dd>${fmtN(sc.total)}</dd></div></dl>`;
+  h+=`<h3>${esc(T('card'))}</h3><div class="stats"><div class="stat"><b>${s.spotted}/${s.scams}</b><span>${esc(T('sSpotted'))}</span></div><div class="stat"><b>${s.verified}/${s.encV}</b><span>${esc(T('sVerified'))}</span></div><div class="stat"><b>${fmtN(s.lost)}</b><span>${esc(T('sLost'))}</span></div><div class="stat"><b>${s.mithu}</b><span>${esc(T('sMithu'))}</span></div>`;
+  if(s.yn>0)h+=`<div class="stat"><b>${s.ynOk}/${s.yn}</b><span>${esc(T('sYn'))}</span></div><div class="stat"><b>${s.ynNet>0?'+':s.ynNet<0?'−':''}${fmtN(Math.abs(s.ynNet))}</b><span>${esc(T('sNet'))}</span></div>`;
+  h+=`</div>`;
+  const seen=[...new Set(s.flags)].map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);
+  if(seen.length)h+=`<h3>${esc(T('flagsMet'))}</h3><ul class="flags">${seen.map(c=>`<li>${esc(tx(c.flags[0]))}</li>`).join('')}</ul>`;
+  if(n===1||n===4)h+=`<h3>${esc(T('parivarT'))}</h3><p style="font-size:15px">${esc(T('parivarD'))}</p>${PARIVAR.map(q=>`<details class="q"><summary>${esc(tx(q.q))}</summary><p>${esc(tx(q.a))}</p></details>`).join('')}<button class="btn ghost small" data-act="copy">${esc(T('copyQ'))}</button>`;
+  h+=`<p class="help">${T('help')}</p><div class="acts">${n<4?`<button class="btn" data-act="next" data-focus>${esc(T('nextLvl'))}</button>`:''}<div class="two"><button class="btn ghost" data-act="replay">${esc(T('replayL'))}</button><button class="btn ghost" data-act="map"${n===4?' data-focus':''}>${esc(T('toMap'))}</button></div></div></div>`;
+  showPanel(h,'modal')}
+function openBrief(fromTitle){
+  let h=`<div class="panel" role="dialog" aria-label="${esc(T('briefT'))}"><p class="kicker">Paisa Safar · ${esc(T('how'))}</p><h2>${esc(T('briefT'))}</h2><ol class="list">${['b1','b2','b3','b4','b5'].map((k,i)=>`<li><span class="n">${i+1}</span><span>${esc(T(k))}</span></li>`).join('')}</ol>`;
+  h+=`<div class="acts"><button class="btn" data-act="close" data-focus>${esc(T('close'))}</button></div></div>`;showPanel(h,'modal')}
+function openLevelIntro(n){const lv=LEVELS[n],names=lv.route.map(k=>LANG==='hi'?TOWNS[k].hi:nice(TOWNS[k].en)).join(' → ');
+  const items=[T('b2'),...lv.lines.map(tx),n===1?T('startNote'):T('carryNote',{n:fmtN(G.coins)})];
+  let h=`<div class="panel" role="dialog" aria-label="${esc(tx(lv.theme))}"><p class="kicker">${esc(T('lvIntroKick',{n}))} · ${esc(tx(lv.theme))}</p><h2>${esc(names)}</h2><p class="note">${esc(tx(lv.blurb))}</p><ol class="list">${items.map((s,i)=>`<li><span class="n">${i+1}</span><span>${esc(s)}</span></li>`).join('')}</ol>`;
+  if(lv.route.some(k=>TOWNS[k].rep))h+=`<p class="real">${esc(tx(CITYNOTE))}</p>`;
+  h+=`<div class="acts"><button class="btn" data-act="go" data-focus>${esc(T('go'))}</button></div></div>`;showPanel(h,'modal')}
+function openMap(){$('title-ui').hidden=true;const P=prog();
+  const lock='<svg viewBox="0 0 12 12" width="22" height="22" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 5h6v6H3zM4 2h4v1h1v2H8V3H4v2H3V3h1z"/></svg>';
+  let h=`<div class="panel" role="dialog" aria-label="${esc(T('mapT'))}"><p class="kicker">Paisa Safar</p><h2>${esc(T('mapT'))}</h2><p class="muted" style="font-size:14px">${esc(T('mapSub'))}</p><div class="rmap">`;let focused=false;
+  for(let n=1;n<=4;n++){const lv=LEVELS[n],done=!!P.done[n],cur=!done&&n<=P.unlocked,st=done?'done':cur?'cur':'lock';
+    const names=lv.route.map(k=>LANG==='hi'?TOWNS[k].hi:nice(TOWNS[k].en)).join(' → ');
+    const fo=(!focused&&cur)?(focused=true,' data-focus'):'';
+    h+=`<button class="stn ${st}" data-act="lvl" data-lv="${n}"${st==='lock'?' disabled aria-label="'+esc(T('lockedL'))+'"':''}${fo}><span class="pin">${st==='lock'?lock:n}</span><span><b>${esc(T('levelWord'))} ${n} · ${esc(tx(lv.theme))}</b><small>${esc(names)}</small>${done?starsHTML(P.stars[n]||1,'stars'):st==='lock'?'<small>'+esc(T('lockedL'))+'</small>':''}</span></button>`}
+  h+=`</div><div class="acts"><button class="btn ghost" data-act="backTitle">${esc(T('back'))}</button></div></div>`;showPanel(h,'modal')}
+function startLevel(n){audioInit();closePanel();$('title-ui').hidden=true;W.fadeDir=1;W.fadeCb=()=>{newGame(n);state='brief';openLevelIntro(n)}}
+function openPause(){if(paused)return;paused=true;pauseFrom=state;state='paused';G&&(G.tsSave=G.tsT);if(AU.ac&&AU.ac.state==='running')AU.ac.suspend();
+  const h=`<div class="panel" role="dialog" aria-label="${esc(T('paused'))}"><h2>${esc(T('paused'))}</h2><div class="acts"><button class="btn" data-act="resume" data-focus>${esc(T('resume'))}</button><button class="btn ghost" data-act="restart">${esc(T('restart'))}</button><button class="btn ghost" data-act="quitmap">${esc(T('quitMap'))}</button></div>
+  <h3>${esc(T('language'))}</h3><div class="seg"><button class="btn ghost small" data-act="lang-en" aria-pressed="${LANG==='en'}">English</button><button class="btn ghost small" data-act="lang-hi" aria-pressed="${LANG==='hi'}">हिन्दी</button></div>
+  <div class="seg"><button class="btn ghost small" data-act="sound">${esc(T(AU.on?'soundOn':'soundOff'))}</button><button class="btn ghost small" data-act="crt">${esc(T('crt'))}: ${esc(T($('crt').hidden?'off':'on'))}</button></div></div>`;showPanel(h,'modal')}
+function resumeGame(){if(!paused)return;paused=false;state=pauseFrom;closePanel();if(AU.ac)AU.ac.resume();lastTs=0;if(state==='encounter'&&E)renderPhone();if(state==='run')setPause(true)}
+function setLang(l){LANG=l;store.set('lang',l);document.documentElement.lang=l==='hi'?'hi':'en';refreshTitle()}
+
+/* title screen */
+function refreshTitle(){$('t-tag').textContent=T('tag');$('b-start').textContent=T('start');$('b-how').textContent=T('how');$('b-sound').textContent=T(AU.on?'soundOn':'soundOff');$('t-fine').textContent=T('fine');$('pause-btn').setAttribute('aria-label',T('paused'))}
+function layoutTitle(){const L=logoLayout();const bottom=(L.y+L.h+(hiTitle?hiTitle.height+6:16))*S;document.documentElement.style.setProperty('--tui-top',Math.round(bottom+8)+'px')}
+function toTitle(){state='title';G=null;E=null;npc=null;closePanel();setPause(false);resetWorld(pick(Object.keys(THEMES)));W.weather='clear';W.titleClock=330;$('title-ui').hidden=false;refreshTitle();layoutTitle()}
+let briefSeen=false;
+function startJourney(){audioInit();openMap()}
+
+/* ---------- input ---------- */
+function press(){audioInit();if(state==='run'||state==='encounter'&&E&&E.phase==='intro'){if(state==='run')doJump()}}
+cv.addEventListener('pointerdown',e=>{e.preventDefault();if(state==='title'){audioInit();return}press()});
+addEventListener('keydown',e=>{if(e.repeat&&e.code!=='Space')return;const k=e.code;
+  if((k==='Space'||k==='ArrowUp'||k==='KeyW')&&state==='run'&&PW.hidden){e.preventDefault();press()}
+  if((k==='Escape'||k==='KeyP')&&(state==='run'||state==='paused')){e.preventDefault();paused?resumeGame():openPause()}
+  if(k==='Enter'&&state==='title'&&document.activeElement===document.body)startJourney()});
+$('b-start').onclick=startJourney;$('b-how').onclick=()=>{audioInit();openBrief(true)};
+$('b-lang').onclick=()=>{setLang(LANG==='en'?'hi':'en')};
+$('b-sound').onclick=()=>{audioInit();setSound(!AU.on);refreshTitle()};
+$('pause-btn').onclick=()=>{if(state==='run')openPause()};
+PW.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act;audioInit();
+  if(a==='verify')doVerify();else if(a==='trust')resolve('trust');else if(a==='ignore')resolve('ignore');else if(a==='report')resolve('report');else if(a==='continue')endEncounter();
+  else if(a==='speak'&&E){speak(tx(E.card.sender)+'. '+tx(E.card.msg)+(E.phase==='msg'?' '+T('mithu')+': '+tx(E.hint):''))}
+  else if(['gig','gullak','express','move'].includes(a))stopChoice(a);
+  else if(a==='go'){closePanel();state='run';banner();setPause(true)}
+  else if(a==='close'){closePanel()}
+  else if(a==='next'||a==='replay'){const n=a==='next'?G.level+1:G.level;startLevel(n)}else if(a==='map'){closePanel();openMap()}else if(a==='lvl'){startLevel(+b.dataset.lv)}else if(a==='backTitle'){closePanel();toTitle()}else if(a==='yes'||a==='no')resolve(a)
+  else if(a==='resume')resumeGame();
+  else if(a==='restart'){const n=G.level;paused=false;closePanel();if(AU.ac)AU.ac.resume();W.fadeDir=1;W.fadeCb=()=>{newGame(n);state='run';banner();setPause(true)}}else if(a==='quitmap'){paused=false;closePanel();if(AU.ac)AU.ac.resume();toTitle();openMap()}
+  else if(a==='lang-en'||a==='lang-hi'){setLang(a.slice(5));paused=false;state=pauseFrom;openPause()}
+  else if(a==='sound'){setSound(!AU.on);paused=false;state=pauseFrom;openPause()}
+  else if(a==='crt'){$('crt').hidden=!$('crt').hidden;store.set('crt',!$('crt').hidden);paused=false;state=pauseFrom;openPause()}
+  else if(a==='copy'){const s=T('parivarT')+' (Paisa Safar)\n'+PARIVAR.map((q,i)=>(i+1)+'. '+tx(q.q)).join('\n');const done=()=>toast(T('copied')),fail=()=>{toast(T('copyFail'));const d=PW.querySelector('details.q');if(d){PW.querySelectorAll('details.q').forEach(x=>x.open=true)}};try{navigator.clipboard.writeText(s).then(done,fail)}catch(err){fail()}}
+});
+function toast(s){const t=document.createElement('div');t.className='toast';t.textContent=s;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='run')openPause()});
+addEventListener('resize',()=>{resize()});
+
+/* ---------- loop & boot ---------- */
+function frame(ts){requestAnimationFrame(frame);const dt=lastTs?Math.min(.05,(ts-lastTs)/1000):0;lastTs=ts;if(!paused)update(dt);render()}
+$('crt').hidden=!store.get('crt',true);
+document.documentElement.lang=LANG==='hi'?'hi':'en';
+resize();toTitle();requestAnimationFrame(frame);
+const mkHi=()=>{hiTitle=hiSprite('पैसा सफ़र',VW>VH?14:16,'#fff6e0','#140c1e');W.boards={};layoutTitle()};mkHi();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(mkHi);
+window.__ps={get state(){return state},get G(){return G},get E(){return E},W,startJourney,startLevel,openMap,LEVELS,prog,CARDS,doVerify,resolve,endEncounter,stopChoice,setLang};
+})();
+</script>
+
+</body></html>
