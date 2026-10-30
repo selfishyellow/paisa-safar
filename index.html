@@ -47,7 +47,7 @@ button{font:inherit;color:inherit}
 #title-ui{position:fixed;left:0;right:0;top:var(--tui-top,46%);display:flex;flex-direction:column;align-items:center;gap:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 #title-ui .tag{margin:0;font-weight:600;font-size:17px;text-align:center;max-width:30ch;text-wrap:balance;color:var(--text);text-shadow:0 2px 0 #140c1e,0 0 12px rgba(10,6,20,.8)}
 #title-ui .acts{display:flex;flex-direction:column;gap:10px;width:min(320px,100%)}
-#title-ui .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+#title-ui .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #title-ui .fine{background:rgba(14,9,28,.74);padding:6px 10px;clip-path:var(--step-s);margin:0;font-size:13px;color:var(--text);opacity:.85;text-align:center;max-width:36ch;text-wrap:balance;text-shadow:0 1px 0 #140c1e,0 0 8px rgba(10,6,20,.9)}
 
 #panel-wrap{position:fixed;inset:0;display:flex;pointer-events:none;padding-top:calc(env(safe-area-inset-top,0px) + 62px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -104,6 +104,8 @@ button{font:inherit;color:inherit}
 .mithu small{display:block;font-family:var(--f-pixel);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8be59a}
 .acts{display:flex;flex-direction:column;gap:9px}
 .acts .two{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.acts .three{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:7px}.acts .three .btn{padding:10px 6px;font-size:14px}
+html.senior .panel{zoom:1.16;width:min(400px,calc((100vw - 32px)/1.16))}html.senior #title-ui{zoom:1.08}#b-senior{flex-direction:column;gap:1px}
 .checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .checks li{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;background:#1e1838;padding:8px 10px;clip-path:var(--step-s)}
 .checks .st{width:24px;height:24px;display:grid;place-items:center;font-family:var(--f-pixel);font-weight:700;font-size:15px;clip-path:var(--step-s);margin-top:1px}
@@ -169,7 +171,7 @@ details.q p{margin-top:6px;font-size:14px;color:#c8fff2}
 .help b{color:#fff}
 .help a{color:#9ff0df}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.seg .btn[aria-pressed="true"]{background:var(--gold);color:#1d1206}
+.seg .btn[aria-pressed="true"],.help .btn[aria-pressed="true"]{background:var(--gold);color:#1d1206}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);background:var(--panel);box-shadow:inset 0 0 0 3px var(--edge);clip-path:var(--step-s);padding:8px 14px;font-family:var(--f-pixel);font-size:14px;pointer-events:none}
 .rmap{display:flex;flex-direction:column}
 .stn{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;text-align:left;border:0;background:transparent;padding:6px 4px 16px;position:relative;cursor:pointer;width:100%}
@@ -199,7 +201,9 @@ html[lang=hi] .panel *,html[lang=hi] .btn{letter-spacing:0!important;text-transf
         <button class="btn ghost small" id="b-how"></button>
         <button class="btn ghost small" id="b-lang">EN / हिं</button>
         <button class="btn ghost small" id="b-sound"></button>
+        <button class="btn ghost small" id="b-player"></button>
       </div>
+      <button class="btn ghost small" id="b-senior"></button>
     </div>
     <p class="fine" id="t-fine"></p>
   </div>
@@ -279,7 +283,11 @@ const HERO_LEGS={
  b:["....ojjjjjo...","....ojjJjjo...",".....ojJjo....",".....ojJjo....",".....owwwo....",".....ooooo...."],
  c:["....ojjjjjo...","...ojJjoojjo..","..oJjo...ojjjo",".oJjo.....owwo",".owwo......oo.","..oo.........."],
  jump:["....ojjjjjo...","...ojjjjjjjo..","..owwoo.ojjo..","..ooo...owwo..","........ooo...",".............."]};
-const HERO={};for(const k in HERO_LEGS)HERO[k]=bake(HERO_TOP.concat(HERO_LEGS[k]),HERO_PAL);
+const HERO_TOP_G=["....oooooo....","...ohhhhhhho..","..ohhhhhhhhho.","..ohhhhhsssso.","..ohhhsssseso.","..ohhSsssssso.","..ohhSssssso..","..ohhSSsso....","..ohhottttlo..",".obhhotttttlo.",".oBbhotTtttso.",".oBbbotTttsso.",".oBBbotTtttlo.","..ooootTTTTo.."];
+const HERO_PAL_G=Object.assign({},HERO_PAL,{t:'#d6337a',T:'#9a2257',l:'#ff9ccc',j:'#5b3a8a',J:'#3d2662'});
+const HERO={};let GIRL=!!store.get('girl',false);
+function buildHero(){const top=GIRL?HERO_TOP_G:HERO_TOP,pal=GIRL?HERO_PAL_G:HERO_PAL;for(const k in HERO_LEGS)HERO[k]=bake(top.concat(HERO_LEGS[k]),pal)}
+buildHero();
 const MITHU_PAL={o:'#12301a',g:'#45d05a',G:'#23863a',y:'#ffd23f',r:'#e8402a',e:'#101010'};
 const MITHU=[bake(["....ooo...","...oggeoo.","oo.oggggrr","oGooggggro","ogGGgggyo.",".oGGGgggo.","..ooogGGo.","....oGGo.."],MITHU_PAL),bake(["....ooo...","...oggeoo.","...oggggrr","..oGggggro",".oGGGggyo.","oGGGGggo..","oGooogGGo.","....oGGo.."],MITHU_PAL)];
 const COIN_PAL={o:'#5a3a08',y:'#ffd23f',Y:'#d9951a',w:'#fff7c2'};
@@ -449,7 +457,7 @@ const PROPS={
 };
 
 /* ---------- i18n ---------- */
-let LANG=store.get('lang','en');
+let LANG=store.get('lang','en');let SENIOR=!!store.get('senior',false);
 const STR={
  tag:{en:"Practise spotting scams before they cost you money",hi:"पैसे गँवाने से पहले, स्कैम पहचानना सीखें"},
  start:{en:"Start journey",hi:"सफ़र शुरू करें"},
@@ -459,27 +467,27 @@ const STR={
  briefT:{en:"Your journey",hi:"आपका सफ़र"},
  b1:{en:"Each level is a train route between Indian cities. You start with 1,000 coins, and the coins you keep carry over to the next level.",hi:"हर लेवल भारतीय शहरों के बीच एक ट्रेन रूट है। आप 1,000 सिक्कों से शुरू करते हैं, और जो सिक्के बचें वे अगले लेवल में साथ जाते हैं।"},
  b2:{en:"Tap, click or press Space to jump. Tap again in the air to double jump.",hi:"कूदने के लिए टैप करें या Space दबाएँ। हवा में दोबारा टैप करें तो डबल जंप।"},
- b3:{en:"In scam encounters, strangers message you. Some are scams, some are genuine. Tap Verify before you act. In the money levels you answer Yes or No.",hi:"स्कैम वाले मुक़ाबलों में अजनबी मैसेज करते हैं। कुछ स्कैम हैं, कुछ असली। कुछ भी करने से पहले Verify दबाएँ। पैसों वाले लेवल में आप हाँ या नहीं चुनते हैं।"},
+ b3:{en:"Strangers message you on the way. Some are scams, some are genuine. Decide yourself, or tap Verify when unsure (it costs time). Rejecting a scam or trusting a genuine message earns Safe points, and spotting it without Verify earns a Sharp-eye bonus. In the money levels you answer Yes or No.",hi:"रास्ते में अनजान लोग मैसेज करेंगे। कुछ स्कैम हैं, कुछ असली। ख़ुद तय करें, या यक़ीन न हो तो Verify दबाएँ (इसमें समय लगता है)। स्कैम ठुकराने या असली मैसेज पर भरोसा करने से सेफ़ पॉइंट मिलते हैं, और बिना Verify पहचानने पर शार्प-आई बोनस। पैसों वाले लेवल में हाँ या नहीं चुनें।"},
  b4:{en:"Mithu the parrot repeats what he hears. He is mostly right early on, and wrong more often as the levels go up.",hi:"मिट्ठू तोता जो सुनता है वही दोहराता है। शुरू में ज़्यादातर सही, और लेवल बढ़ने पर अक्सर ग़लत।"},
  b5:{en:"Score = coins kept + Safe Streak (Level 1) or correct Yes/No answers (Levels 2–4), plus a time bonus capped at 20%. Speed never beats safety.",hi:"स्कोर = बचे सिक्के + सेफ़ स्ट्रीक (लेवल 1) या सही हाँ/नहीं जवाब (लेवल 2–4), और अधिकतम 20% का टाइम बोनस। जल्दबाज़ी कभी सुरक्षा से आगे नहीं।"},
  go:{en:"Let’s go",hi:"चलो चलें"},close:{en:"Close",hi:"बंद करें"},
- verify:{en:"Verify first",hi:"पहले जाँचें"},ignore:{en:"Ignore",hi:"अनदेखा करें"},report:{en:"Report & block",hi:"रिपोर्ट और ब्लॉक"},cont:{en:"Continue",hi:"आगे बढ़ें"},
- checking:{en:"Checking…",hi:"जाँच हो रही है…"},verifyCost:{en:"Verifying costs 2 minutes of journey time.",hi:"जाँच में सफ़र के 2 मिनट लगते हैं।"},
+ verify:{en:"Verify",hi:"जाँचें"},ignore:{en:"Walk away",hi:"छोड़कर बढ़ें"},reportShort:{en:"Report",hi:"रिपोर्ट"},report:{en:"Report & block",hi:"रिपोर्ट और ब्लॉक"},cont:{en:"Continue",hi:"आगे बढ़ें"},
+ checking:{en:"Checking…",hi:"जाँच हो रही है…"},verifyCost:{en:"Verify when unsure: it costs 2 minutes of journey time. Spot it yourself for a Sharp-eye bonus.",hi:"जाँच तब करें जब यक़ीन न हो: इसमें सफ़र के 2 मिनट लगते हैं। ख़ुद पहचानें तो शार्प-आई बोनस मिलेगा।"},
  offer:{en:"Offer ends in",hi:"ऑफ़र ख़त्म होने में"},mithu:{en:"Mithu says",hi:"मिट्ठू कहता है"},incoming:{en:"Incoming call",hi:"इनकमिंग कॉल"},
  readAloud:{en:"Read aloud",hi:"पढ़कर सुनाएँ"},
- vLost:{en:"You got scammed",hi:"आप स्कैम में फँस गए"},vCaught:{en:"Scam spotted and reported",hi:"स्कैम पकड़ा और रिपोर्ट किया"},vIgnored:{en:"Safe, but unchecked",hi:"सुरक्षित, पर बिना जाँचे"},vExpired:{en:"The countdown ran out. Nothing happened.",hi:"उल्टी गिनती ख़त्म हुई। कुछ नहीं बिगड़ा।"},
- vLegitOk:{en:"Genuine, and you checked",hi:"असली, और आपने जाँचा"},vLucky:{en:"Genuine, but unchecked",hi:"असली, पर बिना जाँचे"},vMissed:{en:"That one was genuine",hi:"वह असली था"},
+ vLost:{en:"You got scammed",hi:"आप स्कैम में फँस गए"},vCaught:{en:"Scam spotted and reported",hi:"स्कैम पकड़ा और रिपोर्ट किया"},vIgnored:{en:"Scam avoided",hi:"स्कैम से बचे"},vExpired:{en:"The countdown ran out. Nothing happened.",hi:"उल्टी गिनती ख़त्म हुई। कुछ नहीं बिगड़ा।"},
+ vLegitOk:{en:"Genuine, and you checked",hi:"असली, और आपने जाँचा"},vLucky:{en:"Genuine, and you judged it right",hi:"असली, और आपने सही पहचाना"},vMissed:{en:"That one was genuine",hi:"वह असली था"},
  itWasScam:{en:"It was a scam.",hi:"यह स्कैम था।"},
  nCaught:{en:"In real life, report it at cybercrime.gov.in or call 1930, then block the sender.",hi:"असल ज़िंदगी में cybercrime.gov.in पर रिपोर्ट करें या 1930 पर कॉल करें, फिर भेजने वाले को ब्लॉक करें।"},
- nIgnored:{en:"You stayed safe. Checking first would also have earned a Safe Streak point.",hi:"आप सुरक्षित रहे। पहले जाँचते तो सेफ़ स्ट्रीक पॉइंट भी मिलता।"},
+ nIgnored:{en:"You walked away from a scam. In real life, also report it at 1930 or cybercrime.gov.in so others are warned.",hi:"आप स्कैम से दूर रहे। असल ज़िंदगी में 1930 या cybercrime.gov.in पर रिपोर्ट भी करें, ताकि दूसरे सावधान हों।"},
  nExpired:{en:"Scammers use countdowns to rush you. Letting the clock run out cost you nothing.",hi:"स्कैमर उल्टी गिनती से जल्दबाज़ी कराते हैं। घड़ी ख़त्म होने देने से आपका कुछ नहीं गया।"},
- nLucky:{en:"It was genuine this time. Make it a habit: check every time.",hi:"इस बार असली था। आदत बनाइए: हर बार जाँचें।"},
- nMissed:{en:"No harm done. A quick check would have shown it was genuine.",hi:"कोई नुकसान नहीं। ज़रा-सी जाँच से पता चल जाता कि यह असली था।"},
+ nLucky:{en:"Good judgement. A message that asks for nothing and matches what you did is usually genuine.",hi:"सही फ़ैसला। जो मैसेज कुछ न माँगे और आपके किए काम से मेल खाए, वह अक्सर असली होता है।"},
+ nMissed:{en:"You turned away a genuine message. Rejecting everything has a cost too, so your Safe Streak resets.",hi:"आपने एक असली मैसेज ठुकरा दिया। सब कुछ ठुकराने की भी क़ीमत है, इसलिए सेफ़ स्ट्रीक शून्य हुई।"},
  nMithuWrong:{en:"Mithu was wrong this time. Friendly voices need checking too.",hi:"इस बार मिट्ठू ग़लत था। अपनों की बात भी जाँचनी चाहिए।"},
  streakBroken:{en:"Safe Streak reset to 0.",hi:"सेफ़ स्ट्रीक 0 हो गई।"},
  redFlags:{en:"Red flags",hi:"ख़तरे के संकेत"},goodSigns:{en:"Signs it was genuine",hi:"असली होने के संकेत"},
  coins:{en:"coins",hi:"सिक्के"},min:{en:"min",hi:"मिनट"},streakPlus:{en:"+1 Safe Streak",hi:"+1 सेफ़ स्ट्रीक"},
- stopOf:{en:"Stop {n} of {m} · {t}",hi:"पड़ाव {n}/{m} · {t}"},stopLead:{en:"Pick one before you move on.",hi:"आगे बढ़ने से पहले एक चुनें।"},
+ stopOf:{en:"Stop {n} of {m} · {t}",hi:"पड़ाव {n}/{m} · {t}"},stopLead:{en:"Money stop: a real-life trade-off with no trick. Earn (costs time), save in the Gullak (safe, grows each stop) or spend to save time.",hi:"पैसों का पड़ाव: असल ज़िंदगी जैसा चुनाव, कोई चाल नहीं। कमाएँ (समय लगेगा), गुल्लक में बचाएँ (सुरक्षित, हर पड़ाव पर बढ़ती है) या समय बचाने के लिए ख़र्च करें।"},
  gig:{en:"Do a gig",hi:"एक काम करें"},gullakT:{en:"Gullak Bond (fictional)",hi:"गुल्लक बॉन्ड (काल्पनिक)"},gullakD:{en:"Lock 200 coins. Grows 6% at every stop. Scammers can’t touch it.",hi:"200 सिक्के जमा करें। हर पड़ाव पर 6% बढ़ते हैं। स्कैमर इन्हें छू नहीं सकते।"},
  expressT:{en:"Express train",hi:"एक्सप्रेस ट्रेन"},expressD:{en:"Pay for a faster train to the next town.",hi:"अगले शहर तक तेज़ ट्रेन का किराया दें।"},
  moveT:{en:"Keep moving",hi:"चलते रहें"},moveD:{en:"Keep your coins and go now.",hi:"सिक्के बचाएँ और अभी निकलें।"},
@@ -498,13 +506,33 @@ const STR={
  paused:{en:"Paused",hi:"रुका हुआ"},resume:{en:"Resume",hi:"जारी रखें"},restart:{en:"Restart journey",hi:"सफ़र फिर से शुरू"},crt:{en:"Scanlines",hi:"स्कैनलाइन"},on:{en:"On",hi:"चालू"},off:{en:"Off",hi:"बंद"},
  language:{en:"Language",hi:"भाषा"},
  levelWord:{en:"Level",hi:"लेवल"},lvIntroKick:{en:"Level {n} of 4",hi:"लेवल {n}/4"},
- mapT:{en:"Level map",hi:"लेवल मैप"},mapSub:{en:"Finish a level to unlock the next. Coins you keep carry over.",hi:"अगला लेवल खोलने के लिए एक लेवल पूरा करें। बचे सिक्के साथ चलते हैं।"},lockedL:{en:"Locked",hi:"बंद"},back:{en:"Back",hi:"वापस"},
+ mapT:{en:"Level map",hi:"लेवल मैप"},mapSub:{en:"All 4 levels are open. Play them in order for the full journey: the coins you keep carry over.",hi:"चारों लेवल खुले हैं। पूरे सफ़र के लिए क्रम से खेलें: बचे सिक्के अगले लेवल में साथ चलते हैं।"},lockedL:{en:"Locked",hi:"बंद"},back:{en:"Back",hi:"वापस"},
  startNote:{en:"You start with 1,000 coins.",hi:"आप 1,000 सिक्कों से शुरू करते हैं।"},carryNote:{en:"You start with {n} coins, carried over from the last level.",hi:"आप {n} सिक्कों से शुरू करते हैं, जो पिछले लेवल से आए हैं।"},
  lvlComplete:{en:"Level {n} complete!",hi:"लेवल {n} पूरा!"},nextLvl:{en:"Next level",hi:"अगला लेवल"},replayL:{en:"Replay level",hi:"लेवल फिर खेलें"},toMap:{en:"Level map",hi:"लेवल मैप"},quitMap:{en:"Level map (leave this level)",hi:"लेवल मैप (यह लेवल छोड़ें)"},
  vYnOk:{en:"Good call",hi:"सही फ़ैसला"},vYnBad:{en:"Costly call",hi:"महँगा फ़ैसला"},vYnSkip:{en:"Time ran out. No decision made.",hi:"समय ख़त्म। कोई फ़ैसला नहीं हुआ।"},correctPlus:{en:"+1 correct",hi:"+1 सही"},keyPoints:{en:"Key points",hi:"मुख्य बातें"},decideIn:{en:"Decide in",hi:"फ़ैसले का समय"},
  eCorrect:{en:"Correct decisions × 50",hi:"सही फ़ैसले × 50"},sYn:{en:"Yes/No answers right",hi:"हाँ/नहीं सही जवाब"},sNet:{en:"coins moved by Yes/No",hi:"हाँ/नहीं से सिक्कों में बदलाव"},
  ranks:{en:["Suraksha Champion","Savdhaan Traveller","Learning Fast","Tip Taker"],hi:["सुरक्षा चैंपियन","सावधान यात्री","तेज़ी से सीखते हुए","टिप के पीछे भागने वाले"]}
 };
+Object.assign(STR,{
+ sharpPlus:{en:"+1 Sharp eye",hi:"+1 शार्प आई"},
+ realT:{en:"Real-life check:",hi:"असल ज़िंदगी में जाँच:"},
+ scoresLine:{en:"Problem with a registered broker or adviser? Complain on SEBI SCORES. Lost money? Call 1930 or use cybercrime.gov.in.",hi:"पंजीकृत ब्रोकर या सलाहकार से शिकायत? SEBI SCORES पर करें। पैसा गया? 1930 पर कॉल करें या cybercrime.gov.in पर जाएँ।"},
+ firstT:{en:"Your safe first step",hi:"आपका सुरक्षित पहला क़दम"},
+ firstD:{en:"When you are ready to invest for real: open a demat account only through a SEBI-registered DP or broker, start small (for example a monthly SIP), and verify before you pay anyone. This game never recommends a product.",hi:"जब असली निवेश के लिए तैयार हों: डीमैट खाता सिर्फ़ SEBI-पंजीकृत DP या ब्रोकर से खोलें, छोटी शुरुआत करें (जैसे मासिक SIP), और किसी को भी पैसे देने से पहले जाँचें। यह गेम कभी कोई प्रोडक्ट नहीं सुझाता।"},
+ seniorOn:{en:"Senior mode: On",hi:"सीनियर मोड: चालू"},seniorOff:{en:"Senior mode: Off",hi:"सीनियर मोड: बंद"},
+ seniorHint:{en:"Bigger text, slower timers, no obstacles, read aloud",hi:"बड़े अक्षर, धीमा टाइमर, कोई रुकावट नहीं, पढ़कर सुनाना"}
+});
+Object.assign(STR,{
+ playerB:{en:"Player: Boy",hi:"खिलाड़ी: लड़का"},playerG:{en:"Player: Girl",hi:"खिलाड़ी: लड़की"},
+ conf0Q:{en:"Before you start: how sure are you that you can spot an investment scam?",hi:"शुरू करने से पहले: आपको कितना भरोसा है कि आप निवेश स्कैम पहचान लेंगे?"},
+ conf1Q:{en:"Now, how sure are you that you can spot an investment scam?",hi:"अब, आपको कितना भरोसा है कि आप निवेश स्कैम पहचान लेंगे?"},
+ confScale:{en:"1 = not at all, 5 = very sure",hi:"1 = बिल्कुल नहीं, 5 = पूरा भरोसा"},
+ confSaved:{en:"Thanks! Saved on this device only.",hi:"धन्यवाद! सिर्फ़ इसी डिवाइस पर सहेजा गया।"},
+ codeT:{en:"Your anonymous result code",hi:"आपका गुमनाम रिज़ल्ट कोड"},
+ codeD:{en:"For a class or pilot: paste this code into the form you were given. It has no name or personal data.",hi:"क्लास या पायलट के लिए: यह कोड दिए गए फ़ॉर्म में पेस्ट करें। इसमें कोई नाम या निजी जानकारी नहीं है।"},
+ copyCode:{en:"Copy result code",hi:"रिज़ल्ट कोड कॉपी करें"},codeCopied:{en:"Code copied.",hi:"कोड कॉपी हो गया।"}
+});
+const REALTOOL={reg:{en:"Look the name up on SEBI’s list of registered intermediaries.",hi:"नाम SEBI की पंजीकृत मध्यस्थों की सूची में देखें।"},upi:{en:"Check the payment handle is a @valid UPI handle on SEBI Check.",hi:"SEBI Check पर देखें कि भुगतान हैंडल @valid UPI हैंडल है।"},link:{en:"Type the official website yourself; never log in through a message link.",hi:"आधिकारिक वेबसाइट ख़ुद टाइप करें; मैसेज के लिंक से कभी लॉगिन न करें।"},caller:{en:"Hang up and call the official number from the website yourself.",hi:"फ़ोन काटें और वेबसाइट पर दिया आधिकारिक नंबर ख़ुद मिलाएँ।"},support:{en:"Never install a screen-sharing app for a caller; contact support from the official app.",hi:"किसी कॉलर के कहने पर स्क्रीन-शेयरिंग ऐप न लगाएँ; आधिकारिक ऐप से सपोर्ट से बात करें।"},listing:{en:"Never pay an advance to a seller you have not met; use the platform’s own payment.",hi:"बिना मिले विक्रेता को एडवांस न दें; प्लेटफ़ॉर्म का अपना भुगतान इस्तेमाल करें।"},employer:{en:"Check the company on its official website; real jobs never charge a fee.",hi:"कंपनी को उसकी आधिकारिक वेबसाइट पर जाँचें; असली नौकरी फ़ीस नहीं लेती।"},official:{en:"Look for it on the official website or verified handle.",hi:"इसे आधिकारिक वेबसाइट या वेरिफ़ाइड हैंडल पर देखें।"}};
 const PARIVAR=[
  {q:{en:"A WhatsApp group promises 3 times your money in 7 days. Real or scam?",hi:"एक WhatsApp ग्रुप 7 दिन में पैसा 3 गुना करने का वादा करता है। असली या स्कैम?"},a:{en:"Scam. No registered adviser can promise returns, and “only 2 seats left” is fake pressure.",hi:"स्कैम। कोई पंजीकृत सलाहकार रिटर्न का वादा नहीं कर सकता, और “सिर्फ़ 2 सीट” नकली दबाव है।"}},
  {q:{en:"A caller says your demat account will freeze unless you share the OTP. What do you do?",hi:"कॉलर कहता है कि OTP नहीं बताया तो डीमैट खाता फ़्रीज़ हो जाएगा। आप क्या करेंगे?"},a:{en:"Never share an OTP or PIN. Hang up and call the number on the official website yourself.",hi:"OTP या PIN कभी न बताएँ। फ़ोन काटें और आधिकारिक वेबसाइट पर दिए नंबर पर ख़ुद कॉल करें।"}},
@@ -654,6 +682,18 @@ const YNCARDS=[
   fact:{en:"Regular investing buys more units when prices are low and fewer when high.",hi:"नियमित निवेश में भाव कम हो तो ज़्यादा यूनिट्स और ज़्यादा हो तो कम यूनिट्स मिलती हैं।"},
   flags:[{en:"Regular investing smooths out the ups and downs",hi:"नियमित निवेश उतार-चढ़ाव को सँभालता है"},{en:"Don’t react to every dip",hi:"हर गिरावट पर प्रतिक्रिया न दें"}],
   hintRight:{en:"A dip means cheaper units. Keep the SIP going!",hi:"गिरावट यानी सस्ती यूनिट्स। SIP चालू रखो!"},hintWrong:{en:"Market falling? Pause and hide under the covers!",hi:"बाज़ार गिर रहा है? रुक जाओ और रज़ाई में छिप जाओ!"}},
+ {id:'mf5',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Fund Desk (fictional)",hi:"फ़ंड डेस्क (काल्पनिक)"},sub:{en:"Comparing returns · fictional",hi:"रिटर्न की तुलना · काल्पनिक"},
+  msg:{en:"Fund X shows “18% last year!”. Fund Y has averaged 11% a year for 10 years at lower cost. Switch everything to Fund X?",hi:"फ़ंड X दिखा रहा है “पिछले साल 18%!”। फ़ंड Y ने 10 साल में औसतन 11% सालाना दिया, कम लागत पर। सब कुछ फ़ंड X में डाल दें?"},
+  cd:20,correct:'no',yes:{coins:-90,text:{en:"Fund X’s hot year did not repeat; it made 4% this year.",hi:"फ़ंड X का अच्छा साल दोहराया नहीं गया; इस साल 4% ही मिला।"}},no:{coins:40,text:{en:"Fund Y kept compounding steadily.",hi:"फ़ंड Y लगातार बढ़ता रहा।"}},
+  fact:{en:"One good year says little. Compare long-term returns, costs and risk.",hi:"एक अच्छा साल कुछ ख़ास नहीं बताता। लंबी अवधि का रिटर्न, लागत और जोखिम मिलाएँ।"},
+  flags:[{en:"One-year returns can mislead",hi:"एक साल का रिटर्न भ्रम में डाल सकता है"},{en:"Compare long periods and costs",hi:"लंबी अवधि और लागत की तुलना करें"}],
+  hintRight:{en:"One hot year? Look at ten years, bhai.",hi:"एक अच्छा साल? दस साल देखो, भाई।"},hintWrong:{en:"18%! Shift everything now!",hi:"18%! अभी सब शिफ़्ट करो!"}},
+ {id:'fu5',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Report Card · Kesar Textiles (fictional)",hi:"रिपोर्ट कार्ड · केसर टेक्सटाइल्स (काल्पनिक)"},sub:{en:"Practice read, not advice",hi:"पढ़ने का अभ्यास, सलाह नहीं"},
+  msg:{en:"Revenue up 12%. Profit up 9%. But the auditor resigned last month and the promoters have pledged 80% of their shares. Would you buy this fictional company?",hi:"आय 12% बढ़ी। मुनाफ़ा 9% बढ़ा। पर पिछले महीने ऑडिटर ने इस्तीफ़ा दिया और प्रमोटरों ने अपने 80% शेयर गिरवी रखे हैं। क्या आप यह काल्पनिक कंपनी ख़रीदेंगे?"},
+  cd:18,correct:'no',yes:{coins:-110,text:{en:"The pledged shares were sold in a fall and the price dropped 35%.",hi:"गिरावट में गिरवी शेयर बेचे गए और भाव 35% गिर गया।"}},no:{coins:0,text:{en:"You avoided a company with clear governance warning signs.",hi:"आपने साफ़ चेतावनी संकेतों वाली कंपनी से दूरी रखी।"}},
+  fact:{en:"Good numbers are not enough: an auditor quitting or heavy promoter pledging are warning signs.",hi:"अच्छे आँकड़े काफ़ी नहीं: ऑडिटर का जाना या प्रमोटरों का भारी गिरवी रखना चेतावनी के संकेत हैं।"},
+  flags:[{en:"Auditor resigned",hi:"ऑडिटर ने इस्तीफ़ा दिया"},{en:"High promoter pledge",hi:"प्रमोटरों का भारी गिरवी"}],
+  hintRight:{en:"The auditor left? That’s a red light.",hi:"ऑडिटर चला गया? यह लाल बत्ती है।"},hintWrong:{en:"Profits are up. What else matters?",hi:"मुनाफ़ा बढ़ा है। और क्या चाहिए?"}},
  {id:'fu1',kind:'yn',app:'sim',npc:'student',av:'#2f6fb0',sender:{en:"Report Card · Sunrise Foods (fictional)",hi:"रिपोर्ट कार्ड · सनराइज़ फ़ूड्स (काल्पनिक)"},sub:{en:"Practice read, not advice",hi:"पढ़ने का अभ्यास, सलाह नहीं"},
   msg:{en:"Revenue up 40%. Profit: a loss of 90 coins. Debt: 5x its equity. Cash left for 4 months. Would you buy this fictional company?",hi:"आय 40% बढ़ी। मुनाफ़ा: 90 सिक्कों का घाटा। क़र्ज़: अपनी इक्विटी का 5 गुना। कैश सिर्फ़ 4 महीने का। क्या आप यह काल्पनिक कंपनी ख़रीदेंगे?"},
   cd:18,correct:'no',yes:{coins:-180,text:{en:"Sales grew by cutting prices. The loss widened and it had to borrow more. Your coins fell by 180.",hi:"दाम घटाकर बिक्री बढ़ी। घाटा बढ़ा और और क़र्ज़ लेना पड़ा। आपके 180 सिक्के गए।"}},no:{coins:0,text:{en:"Good read: growth bought with losses and heavy debt is fragile.",hi:"अच्छा पढ़ा: घाटे और भारी क़र्ज़ से ख़रीदी गई बढ़त कमज़ोर होती है।"}},
@@ -680,34 +720,76 @@ const YNCARDS=[
   hintRight:{en:"Profit is real cash and debt is low. Good sign!",hi:"मुनाफ़ा असली कैश है और क़र्ज़ कम। अच्छा संकेत!"},hintWrong:{en:"Too good to be true. It must be a trap!",hi:"इतना अच्छा हो नहीं सकता। ज़रूर जाल है!"}}
 ];
 const NEWSCAMS=[
+ {id:'womenclub',kind:'scam',app:'chat',npc:'cousin',av:'#e8508a',sender:{en:"Sakhi Wealth Circle (women only)",hi:"सखी वेल्थ सर्कल (सिर्फ़ महिलाएँ)"},sub:{en:"A friend added you",hi:"एक सहेली ने जोड़ा"},
+  msg:{en:"Ladies, our women-only circle doubles savings in 6 months. Join with 300 coins today. No need to tell anyone at home.",hi:"बहनों, हमारा सिर्फ़-महिलाओं का सर्कल 6 महीने में बचत दोगुनी करता है। आज 300 सिक्कों से जुड़ें। घर पर किसी को बताने की ज़रूरत नहीं।"},
+  cta:{en:"Pay & join",hi:"भुगतान कर जुड़ें"},cd:15,loss:.25,delay:30,
+  checks:[['reg',{en:"The circle and its organiser are not registered with SEBI.",hi:"सर्कल और इसकी आयोजक SEBI में पंजीकृत नहीं हैं।"}],['claim',{en:"No real investment can promise to double money in 6 months, and “don’t tell anyone” is a classic isolation trick.",hi:"कोई असली निवेश 6 महीने में पैसा दोगुना करने का वादा नहीं कर सकता, और “किसी को मत बताना” अकेला करने की पुरानी चाल है।"}]],
+  outcome:{en:"The circle pays early members with new members’ money, then shuts down.",hi:"सर्कल नए सदस्यों के पैसों से पुराने सदस्यों को देता है, फिर बंद हो जाता है।"},
+  flags:[{en:"Trust built on a shared identity",hi:"एक जैसी पहचान पर बना भरोसा"},{en:"Doubling promised",hi:"दोगुने का वादा"},{en:"“Keep it secret”",hi:"“किसी को मत बताना”"}],
+  right:{en:"A secret group that doubles money? Talk to family, then check.",hi:"पैसा दोगुना करने वाला गुप्त ग्रुप? घरवालों से बात करो, फिर जाँचो।"}},
+ {id:'lookalike',kind:'scam',app:'sms',npc:'officer',av:'#5b6a8c',sender:{en:"VM-TRDCNF",hi:"VM-TRDCNF"},sub:{en:"Text message",hi:"टेक्स्ट मैसेज"},
+  msg:{en:"Trade confirmation: 10 shares of Sunrise Foods (fictional) bought at 412. Not you? Review your account here: nse-tradecheck.in/r/48213",hi:"ट्रेड पुष्टि: सनराइज़ फ़ूड्स (काल्पनिक) के 10 शेयर 412 पर ख़रीदे गए। आपने नहीं किया? अपना खाता यहाँ देखें: nse-tradecheck.in/r/48213"},
+  cta:{en:"Open link",hi:"लिंक खोलें"},cd:15,loss:.25,delay:30,
+  checks:[['link',{en:"The exchange’s real site ends in nseindia.com. “nse-tradecheck.in” is a lookalike.",hi:"एक्सचेंज की असली साइट nseindia.com है। “nse-tradecheck.in” नकली हमशक्ल है।"}],['claim',{en:"Real trade confirmations come from your own broker and never ask you to log in through a link.",hi:"असली ट्रेड पुष्टि आपके ब्रोकर से आती है और कभी लिंक से लॉगिन नहीं कहती।"}]],
+  outcome:{en:"The page copies your broker’s login screen. Your password is stolen and your shares are sold.",hi:"पेज आपके ब्रोकर का लॉगिन जैसा दिखता है। पासवर्ड चोरी हुआ और शेयर बेच दिए गए।"},
+  flags:[{en:"A lookalike web address",hi:"मिलता-जुलता वेब पता"},{en:"A trade you never made, to make you panic",hi:"घबराने के लिए एक ट्रेड जो आपने किया ही नहीं"},{en:"Log in through a link",hi:"लिंक से लॉगिन"}],
+  right:{en:"Looks official… but whose website is that? Check the link.",hi:"आधिकारिक लगता है… पर वेबसाइट किसकी है? लिंक जाँचो।"}},
+ {id:'mentor',kind:'scam',app:'chat',npc:'influencer',av:'#25a865',sender:{en:"Priya · Market Learning Circle",hi:"प्रिया · मार्केट लर्निंग सर्कल"},sub:{en:"You joined this group last week",hi:"आप पिछले हफ़्ते इस ग्रुप में जुड़े"},
+  msg:{en:"Hi! Our analyst posts 2–3 practice trades a week on our learning app. No fee for the first month. Just install Learnvest Pro and add 500 coins to start.",hi:"नमस्ते! हमारे एनालिस्ट हफ़्ते में 2–3 प्रैक्टिस ट्रेड हमारे लर्निंग ऐप पर डालते हैं। पहला महीना मुफ़्त। बस Learnvest Pro इंस्टॉल करें और शुरू करने के लिए 500 सिक्के डालें।"},
+  cta:{en:"Install & add 500",hi:"इंस्टॉल कर 500 डालें"},cd:16,loss:.3,delay:30,
+  checks:[['reg',{en:"Neither the analyst nor “Learnvest Pro” is SEBI-registered.",hi:"न एनालिस्ट, न “Learnvest Pro” SEBI में पंजीकृत है।"}],['claim',{en:"Friendly “learning” groups that move you to a private app to deposit money are a common investment-scam route.",hi:"दोस्ताना “लर्निंग” ग्रुप जो आपको पैसा जमा करने के लिए निजी ऐप पर ले जाएँ, आम निवेश-स्कैम का तरीका हैं।"}]],
+  outcome:{en:"The app shows profits for two weeks, then asks for a “tax” before withdrawal. The group vanishes.",hi:"ऐप दो हफ़्ते मुनाफ़ा दिखाता है, फिर निकालने से पहले “टैक्स” माँगता है। ग्रुप ग़ायब हो जाता है।"},
+  flags:[{en:"Friendly, no pressure (at first)",hi:"दोस्ताना, कोई दबाव नहीं (शुरू में)"},{en:"Moves you to a private app",hi:"निजी ऐप पर ले जाता है"},{en:"Deposit into an unregistered platform",hi:"अपंजीकृत प्लेटफ़ॉर्म में पैसा"}],
+  right:{en:"No guarantee, no rush… but who runs this app? Check.",hi:"न गारंटी, न जल्दी… पर ऐप चलाता कौन है? जाँचो।"}},
+ {id:'refund',kind:'scam',app:'sms',npc:'courier',av:'#5b6a8c',sender:{en:"AD-IPOREF",hi:"AD-IPOREF"},sub:{en:"Text message",hi:"टेक्स्ट मैसेज"},
+  msg:{en:"Your IPO application money of 1,500 coins is pending refund. Confirm your UPI ID to receive it: refunds.ipo@quickupi",hi:"आपके IPO आवेदन के 1,500 सिक्के रिफ़ंड के लिए बाकी हैं। पाने के लिए अपनी UPI ID भेजें: refunds.ipo@quickupi"},
+  cta:{en:"Send UPI ID",hi:"UPI ID भेजें"},cd:15,loss:.2,delay:25,
+  checks:[['claim',{en:"IPO money is unblocked automatically in your own bank account. Nobody needs your UPI ID for it.",hi:"IPO का पैसा अपने-आप आपके बैंक खाते में अनब्लॉक होता है। इसके लिए किसी को आपकी UPI ID नहीं चाहिए।"}],['upi',{en:"refunds.ipo@quickupi has no @valid tag and is not linked to any registered entity.",hi:"refunds.ipo@quickupi में @valid नहीं है और यह किसी पंजीकृत संस्था से जुड़ा नहीं।"}]],
+  outcome:{en:"They send a “collect” request. Approving it takes 1,500 coins from you instead of refunding them.",hi:"उन्होंने “कलेक्ट” रिक्वेस्ट भेजी। मंज़ूर करते ही रिफ़ंड की जगह आपके 1,500 सिक्के चले गए।"},
+  flags:[{en:"A refund that needs your action",hi:"ऐसा रिफ़ंड जिसमें आपको कुछ करना पड़े"},{en:"Unknown UPI handle",hi:"अनजान UPI हैंडल"},{en:"A collect request disguised as a refund",hi:"रिफ़ंड के रूप में कलेक्ट रिक्वेस्ट"}],
+  right:{en:"A refund? IPO money unblocks by itself, na? Check first.",hi:"रिफ़ंड? IPO का पैसा तो अपने-आप लौटता है, ना? पहले जाँचो।"}},
+ {id:'otpown',kind:'legit',app:'sms',npc:'officer',av:'#2f6fb0',sender:{en:"Kalyan Securities (fictional)",hi:"कल्याण सिक्योरिटीज़ (काल्पनिक)"},sub:{en:"Official sender ID · you just tried to log in",hi:"आधिकारिक सेंडर ID · आपने अभी लॉगिन किया"},
+  msg:{en:"482913 is your OTP to log in to Kalyan Securities. Do not share it with anyone. If this wasn’t you, call the number on our website.",hi:"482913 कल्याण सिक्योरिटीज़ में लॉगिन का आपका OTP है। इसे किसी से साझा न करें। यह आप नहीं थे तो हमारी वेबसाइट वाले नंबर पर कॉल करें।"},
+  cta:{en:"Use it to log in",hi:"लॉगिन के लिए इस्तेमाल करें"},cd:0,
+  checks:[['official',{en:"You started this login a moment ago, and the sender ID matches your broker.",hi:"यह लॉगिन आपने अभी शुरू किया, और सेंडर ID आपके ब्रोकर से मेल खाती है।"},1],['claim',{en:"It warns you not to share the OTP and asks for nothing. Using it yourself is safe.",hi:"यह OTP साझा न करने की चेतावनी देता है और कुछ नहीं माँगता। ख़ुद इस्तेमाल करना सुरक्षित है।"},1]],
+  outcome:{en:"You logged in to your own account. Using an OTP you asked for is fine; sharing it is not.",hi:"आपने अपने खाते में लॉगिन किया। अपना माँगा OTP इस्तेमाल करना ठीक है; साझा करना नहीं।"},
+  flags:[{en:"You started this login",hi:"लॉगिन आपने शुरू किया"},{en:"No link, no request",hi:"न लिंक, न माँग"},{en:"Warns you not to share",hi:"साझा न करने की चेतावनी"}],
+  right:{en:"An OTP… but you asked for this one. Check if unsure.",hi:"OTP… पर यह तो आपने ही माँगा। शक हो तो जाँचो।"}},
+ {id:'divid',kind:'legit',app:'kalyan',npc:'courier',av:'#2f6fb0',sender:{en:"Kalyan Securities (fictional)",hi:"कल्याण सिक्योरिटीज़ (काल्पनिक)"},sub:{en:"Your registered broker",hi:"आपका पंजीकृत ब्रोकर"},
+  msg:{en:"A dividend of 42 coins for your Gaya Infra (fictional) shares has been credited to your registered bank account. No action needed.",hi:"आपके गया इन्फ़्रा (काल्पनिक) शेयरों का 42 सिक्कों का डिविडेंड आपके पंजीकृत बैंक खाते में जमा हो गया है। कुछ करने की ज़रूरत नहीं।"},
+  cta:{en:"Noted",hi:"नोट किया"},cd:0,bonus:42,
+  checks:[['official',{en:"It matches your broker and the shares you own, and asks for nothing.",hi:"यह आपके ब्रोकर और आपके शेयरों से मेल खाता है, और कुछ नहीं माँगता।"},1],['claim',{en:"Genuine credits need no link, OTP or fee.",hi:"असली जमा के लिए न लिंक, न OTP, न फ़ीस चाहिए।"},1]],
+  outcome:{en:"The 42 coins are already in your bank. Genuine alerts inform you; they don’t ask for anything.",hi:"42 सिक्के पहले ही आपके बैंक में हैं। असली अलर्ट जानकारी देते हैं; कुछ माँगते नहीं।"},
+  flags:[{en:"Asks for nothing",hi:"कुछ नहीं माँगता"},{en:"Matches what you own",hi:"आपके शेयरों से मेल"},{en:"No link, no deadline",hi:"न लिंक, न डेडलाइन"}],
+  right:{en:"A free-money message? Suspicious… or is it? Check if unsure.",hi:"मुफ़्त पैसे का मैसेज? शक होता है… या नहीं? शक हो तो जाँचो।"}},
  {id:'jamtara',city:'jamtara',kind:'scam',app:'call',npc:'officer',av:'#1f8f7e',sender:{en:"Bank KYC Cell",hi:"बैंक KYC सेल"},sub:{en:"+91 8XXXX X5521 · calling",hi:"+91 8XXXX X5521 · कॉल आ रही है"},
   msg:{en:"“Your bank KYC expires today and your account will be blocked. Tell me the OTP we just sent and I’ll update it.”",hi:"“आपकी बैंक KYC आज ख़त्म हो रही है और खाता ब्लॉक हो जाएगा। अभी भेजा गया OTP बताइए, मैं अपडेट कर दूँगा।”"},
   cta:{en:"Share OTP",hi:"OTP बताएँ"},cd:11,loss:.35,delay:45,
   checks:[['caller',{en:"It’s a personal mobile number, not your bank’s official line.",hi:"यह निजी मोबाइल नंबर है, आपके बैंक की आधिकारिक लाइन नहीं।"}],['claim',{en:"No bank asks for your OTP on a call. KYC is updated in the bank’s own app or branch.",hi:"कोई बैंक कॉल पर OTP नहीं माँगता। KYC बैंक के अपने ऐप या शाखा में अपडेट होती है।"}]],
   outcome:{en:"With your OTP they empty your account within minutes.",hi:"आपके OTP से उन्होंने मिनटों में खाता ख़ाली कर दिया।"},
   flags:[{en:"A threat: “account blocked today”",hi:"धमकी: “खाता आज ब्लॉक”"},{en:"Asks for your OTP",hi:"OTP माँगा"},{en:"A personal mobile number",hi:"निजी मोबाइल नंबर"}],
-  right:{en:"OTP? Kabhi nahi! Hang up and call the bank yourself!",hi:"OTP? कभी नहीं! फ़ोन काटो और बैंक को ख़ुद कॉल करो!"}},
+  right:{en:"Hmm… would a real bank ask for an OTP on a call?",hi:"हम्म… क्या असली बैंक कॉल पर OTP माँगेगा?"}},
  {id:'deoghar',city:'deoghar',kind:'scam',app:'sms',npc:'courier',av:'#5b6a8c',sender:{en:"VK-DEMATKYC",hi:"VK-DEMATKYC"},sub:{en:"Text message",hi:"टेक्स्ट मैसेज"},
   msg:{en:"Your demat account is blocked. Update KYC within 2 hours or it will be closed: kyc-depo-update.xyz/verify",hi:"आपका डीमैट खाता ब्लॉक है। 2 घंटे में KYC अपडेट करें वरना बंद हो जाएगा: kyc-depo-update.xyz/verify"},
   cta:{en:"Open link",hi:"लिंक खोलें"},cd:12,loss:.3,delay:35,
   checks:[['link',{en:"Real depository and broker sites don’t use random “.xyz” addresses. Open your broker’s own app instead.",hi:"असली डिपॉज़िटरी और ब्रोकर साइटें किसी भी “.xyz” पते पर नहीं होतीं। अपने ब्रोकर का ऐप ख़ुद खोलें।"}],['claim',{en:"A real KYC reminder doesn’t threaten closure in 2 hours or ask you to log in through an SMS link.",hi:"असली KYC रिमाइंडर 2 घंटे में बंद करने की धमकी नहीं देता और SMS लिंक से लॉगिन नहीं कराता।"}]],
   outcome:{en:"The look-alike page copies your login and OTP. Your holdings are now at risk.",hi:"हूबहू दिखने वाला पेज आपका लॉगिन और OTP कॉपी कर लेता है। अब आपकी होल्डिंग्स ख़तरे में हैं।"},
   flags:[{en:"A threat with a 2-hour deadline",hi:"2 घंटे की डेडलाइन के साथ धमकी"},{en:"A look-alike web address",hi:"मिलता-जुलता वेब पता"},{en:"Asks you to log in via a link",hi:"लिंक से लॉगिन माँगा"}],
-  right:{en:"A link in an SMS? Check the address first!",hi:"SMS में लिंक? पहले पता जाँचो!"}},
+  right:{en:"Blocked in 2 hours? Look closely at that web address.",hi:"2 घंटे में बंद? वेब पता ध्यान से देखो।"}},
  {id:'nuh',city:'nuh',kind:'scam',app:'chat',npc:'officer',av:'#6a8a5a',sender:{en:"Capt. Vikram (BazaarKart seller)",hi:"कैप्टन विक्रम (बाज़ारकार्ट विक्रेता)"},sub:{en:"Listing: Royal 350 bike · 18,000 coins",hi:"लिस्टिंग: रॉयल 350 बाइक · 18,000 सिक्के"},
   msg:{en:"Selling my bike urgently. I’m posted with the Army and can’t meet. Pay 2,000 coins advance for packing and courier. Army transport will deliver.",hi:"बाइक जल्दी बेच रहा हूँ। मैं सेना में तैनात हूँ, मिल नहीं सकता। पैकिंग और कूरियर के लिए 2,000 सिक्के एडवांस दें। आर्मी ट्रांसपोर्ट डिलीवर करेगा।"},
   cta:{en:"Pay advance",hi:"एडवांस दें"},cd:12,loss:.2,delay:30,
   checks:[['listing',{en:"The seller profile is 2 days old, and the bike photos appear on other listings too.",hi:"विक्रेता की प्रोफ़ाइल 2 दिन पुरानी है और बाइक की फ़ोटो दूसरी लिस्टिंग में भी हैं।"}],['claim',{en:"Real sellers let you see the bike before you pay. “Army posting + advance for courier” is a common scam script.",hi:"असली विक्रेता पैसे लेने से पहले बाइक दिखाते हैं। “सेना में तैनाती + कूरियर के लिए एडवांस” स्कैम की जानी-पहचानी पटकथा है।"}]],
   outcome:{en:"You paid the advance. Then comes a “customs fee”, and the seller disappears.",hi:"आपने एडवांस दिया। फिर “कस्टम फ़ीस” माँगी गई और विक्रेता ग़ायब।"},
   flags:[{en:"Seller can’t meet you",hi:"विक्रेता मिल नहीं सकता"},{en:"Advance before you see the bike",hi:"बाइक देखने से पहले एडवांस"},{en:"An army identity used to build trust",hi:"भरोसे के लिए सेना की पहचान"}],
-  right:{en:"Pay before seeing the bike? Never, bhai!",hi:"बाइक देखे बिना पैसे? कभी नहीं, भाई!"}},
+  right:{en:"Can’t meet you, but wants money first? Think about it.",hi:"मिल नहीं सकता, पर पैसा पहले चाहिए? ज़रा सोचो।"}},
  {id:'bharatpur',city:'bharatpur',kind:'scam',app:'call',npc:'officer',av:'#1f8f7e',sender:{en:"TradeZone Support (fictional)",hi:"ट्रेडज़ोन सपोर्ट (काल्पनिक)"},sub:{en:"+91 7XXXX X9930 · calling",hi:"+91 7XXXX X9930 · कॉल आ रही है"},
   msg:{en:"“Your withdrawal failed. To fix it, install the ‘ScreenShare Helper’ app and read us the 9-digit code so we can see your screen.”",hi:"“आपका विदड्रॉल फ़ेल हो गया। ठीक करने के लिए ‘ScreenShare Helper’ ऐप इंस्टॉल करें और 9 अंकों का कोड बताएँ ताकि हम आपकी स्क्रीन देख सकें।”"},
   cta:{en:"Install & share code",hi:"इंस्टॉल करें और कोड बताएँ"},cd:12,loss:.4,delay:50,
   checks:[['support',{en:"The number came from a search result, not from the app’s own Help screen.",hi:"नंबर सर्च रिज़ल्ट से आया है, ऐप की अपनी Help स्क्रीन से नहीं।"}],['claim',{en:"Real support never asks for screen control. Remote-access apps let a stranger see your OTPs and bank apps.",hi:"असली सपोर्ट स्क्रीन का कंट्रोल कभी नहीं माँगता। रिमोट-एक्सेस ऐप से अजनबी आपके OTP और बैंक ऐप देख सकता है।"}]],
   outcome:{en:"They watch your screen, read your OTP and empty your account.",hi:"वे आपकी स्क्रीन देखकर OTP पढ़ते हैं और खाता ख़ाली कर देते हैं।"},
   flags:[{en:"An unrequested support call",hi:"बिन माँगी सपोर्ट कॉल"},{en:"Asks you to install a remote-access app",hi:"रिमोट-एक्सेस ऐप इंस्टॉल करने को कहा"},{en:"Number from a search result",hi:"नंबर सर्च रिज़ल्ट से"}],
-  right:{en:"Screen sharing with a stranger? Kabhi nahi!",hi:"अजनबी से स्क्रीन शेयर? कभी नहीं!"}},
+  right:{en:"Why would support need to see your screen?",hi:"सपोर्ट को आपकी स्क्रीन क्यों देखनी है?"}},
  {id:'kolkata',city:'kolkata',kind:'scam',app:'call',npc:'officer',av:'#1f8f7e',sender:{en:"BrokerCare Desk (fictional)",hi:"ब्रोकरकेयर डेस्क (काल्पनिक)"},sub:{en:"+91 33XX XX2210 · calling",hi:"+91 33XX XX2210 · कॉल आ रही है"},
   msg:{en:"“Sir, there was a suspicious login on your trading account. To secure it, tell me your user ID and password and I’ll reset it now.”",hi:"“सर, आपके ट्रेडिंग खाते में संदिग्ध लॉगिन हुआ है। सुरक्षित करने के लिए अपना यूज़र ID और पासवर्ड बताइए, मैं अभी रीसेट कर दूँगा।”"},
   cta:{en:"Share login",hi:"लॉगिन बताएँ"},cd:11,loss:.35,delay:45,
@@ -741,10 +823,10 @@ CARDS.push(...NEWSCAMS,...YNCARDS);
 const LEVELS=[null,
  {n:1,key:'scam',theme:{en:"Safety from scams",hi:"स्कैम से सुरक्षा"},route:['jamtara','deoghar','nuh','bharatpur'],cdMul:1.35,wrongN:1,speedAdd:0,
   blurb:{en:"Starter level. Obvious red flags, generous timers, and Mithu is mostly right.",hi:"शुरुआती लेवल। साफ़ ख़तरे के संकेत, आराम का टाइमर, और मिट्ठू ज़्यादातर सही।"},
-  lines:[{en:"Decisions: Verify first, then Join, Pay, Walk away or Report.",hi:"फ़ैसले: पहले जाँचें, फिर जुड़ें, भुगतान करें, चले जाएँ या रिपोर्ट करें।"},{en:"Score = coins kept + Safe Streak points (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सेफ़ स्ट्रीक पॉइंट (+ टाइम बोनस, अधिकतम 20%)।"}]},
+  lines:[{en:"Decide: Join/Pay, Walk away or Report. Verify when unsure; spotting a scam yourself earns a Sharp-eye bonus.",hi:"फ़ैसला करें: जुड़ें/भुगतान करें, छोड़कर बढ़ें या रिपोर्ट करें। यक़ीन न हो तो Verify करें; ख़ुद स्कैम पहचानने पर शार्प-आई बोनस।"},{en:"Score = coins kept + Safe Streak points (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सेफ़ स्ट्रीक पॉइंट (+ टाइम बोनस, अधिकतम 20%)।"}]},
  {n:2,key:'fno',theme:{en:"Futures & options",hi:"फ़्यूचर्स और ऑप्शंस"},route:['kolkata','delhi','gullakpur'],cdMul:1,wrongN:3,speedAdd:8,
   blurb:{en:"Leverage traps and fake “broker support” calls. Shorter timers, and Mithu is wrong more often.",hi:"लीवरेज के जाल और नकली “ब्रोकर सपोर्ट” कॉल। छोटा टाइमर, और मिट्ठू अक्सर ग़लत।"},
-  lines:[{en:"Money decisions are quick Yes or No. No Verify there, but a scam can still show up. Then Verify comes back.",hi:"पैसों के फ़ैसले सीधे हाँ या नहीं। वहाँ Verify नहीं, पर स्कैम फिर भी आ सकता है। तब Verify लौट आता है।"},{en:"Score = coins kept + correct decisions (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सही फ़ैसले (+ टाइम बोनस, अधिकतम 20%)।"}]},
+  lines:[{en:"SEBI’s FY26 study: about 89% of individual F&O traders under 30 lost money.",hi:"SEBI का FY26 अध्ययन: 30 से कम उम्र के लगभग 89% व्यक्तिगत F&O ट्रेडर्स को नुकसान हुआ।"},{en:"Money decisions are quick Yes or No. No Verify there, but a scam can still show up. Then Verify comes back.",hi:"पैसों के फ़ैसले सीधे हाँ या नहीं। वहाँ Verify नहीं, पर स्कैम फिर भी आ सकता है। तब Verify लौट आता है।"},{en:"Score = coins kept + correct decisions (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सही फ़ैसले (+ टाइम बोनस, अधिकतम 20%)।"}]},
  {n:3,key:'mf',theme:{en:"Mutual funds",hi:"म्यूचुअल फ़ंड"},route:['motiganj','sahkarpur','dhanpur'],cdMul:.9,wrongN:3,speedAdd:16,
   blurb:{en:"Expense ratios, diversification and a “guaranteed scheme” scam. Mithu’s hints are a mix of true and false.",hi:"एक्सपेंस रेशियो, विविधता और एक “पक्की स्कीम” वाला स्कैम। मिट्ठू की सलाह में सच और झूठ मिले हैं।"},
   lines:[{en:"Money decisions are quick Yes or No, and you see the cost or benefit in coins.",hi:"पैसों के फ़ैसले सीधे हाँ या नहीं, और सिक्कों में लागत या लाभ दिखता है।"},{en:"Score = coins kept + correct decisions (+ time bonus, max 20%).",hi:"स्कोर = बचे सिक्के + सही फ़ैसले (+ टाइम बोनस, अधिकतम 20%)।"}]},
@@ -754,15 +836,15 @@ const LEVELS=[null,
 ];
 function buildSched(n){
   const S=(p,c)=>({p,c});
-  if(n===1){const legit=pick(['statement','sip','alert']),extra=pick(['tips','app','ipo','course','pump','cousin','task','fakereg','kyc']);
+  if(n===1){const legit=pick(['statement','sip','alert','otpown','divid']),extra=pick(['tips','app','ipo','course','pump','cousin','task','fakereg','kyc','lookalike','mentor','refund','womenclub']);
     return[[S(.3,'jamtara'),S(.72,'deoghar')],[S(.3,legit),S(.72,'nuh')],[S(.3,extra),S(.7,'bharatpur')]]}
-  if(n===2){const yn=shuffle(['fo1','fo2','fo3']),tw=shuffle(['ftips','jobfee']);
-    return[[S(.25,'kolkata'),S(.52,yn[0]),S(.78,yn[1])],[S(.25,tw[0]),S(.52,tw[1]),S(.78,yn[2])]]}
-  if(n===3){const yn=shuffle(['mf1','mf2','mf3','mf4']);
-    return[[S(.3,yn[0]),S(.7,yn[1])],[S(.25,'guar'),S(.55,yn[2]),S(.8,yn[3])]]}
-  const yn=shuffle(['fu1','fu2','fu3','fu4']);
-  return[[S(.3,yn[0]),S(.7,yn[1])],[S(.25,'deepfake'),S(.55,yn[2]),S(.8,yn[3])]]}
-function prog(){const p=store.get('prog',null)||{};return Object.assign({unlocked:1,done:{},stars:{},best:{},carry:{}},p)}
+  if(n===2){const yn=shuffle(['fo1','fo2','fo3']),tw=shuffle(['ftips','jobfee']),lg=pick(['otpown','divid']);
+    return[[S(.25,'kolkata'),S(.52,yn[0]),S(.78,yn[1])],[S(.2,tw[0]),S(.4,lg),S(.6,tw[1]),S(.8,yn[2])]]}
+  if(n===3){const yn=shuffle(['mf1','mf2','mf3','mf4','mf5']);
+    return[[S(.25,yn[0]),S(.52,pick(['refund','womenclub'])),S(.78,yn[1])],[S(.2,'guar'),S(.4,yn[2]),S(.6,yn[3]),S(.8,yn[4])]]}
+  const yn=shuffle(['fu1','fu2','fu3','fu4','fu5']);
+  return[[S(.25,yn[0]),S(.52,pick(['lookalike','mentor'])),S(.78,yn[1])],[S(.2,'deepfake'),S(.4,yn[2]),S(.6,yn[3]),S(.8,yn[4])]]}
+function prog(){const p=store.get('prog',null)||{};const q=Object.assign({unlocked:4,done:{},stars:{},best:{},carry:{}},p);q.unlocked=4;return q}
 function saveProg(p){store.set('prog',p)}
 const cardById=id=>CARDS.find(c=>c.id===id);
 const nice=s=>s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
@@ -774,6 +856,17 @@ function stopNote(){const t=TOWNS[G.route[G.leg+1]];return t&&t.rep?`<p class="r
 function starsHTML(n,cls){return`<span class="${cls}">${'★'.repeat(n)}<i>${'★'.repeat(3-n)}</i></span>`}
 
 const WRONG_SCAM=[{en:"Arre, my cousin’s friend doubled his money like this! Jaldi join karo!",hi:"अरे, मेरे कज़िन के दोस्त ने ऐसे ही पैसा डबल किया! जल्दी जॉइन करो!"},{en:"Everyone in my building is doing it. Must be safe!",hi:"मेरी बिल्डिंग में सब कर रहे हैं। सुरक्षित ही होगा!"},{en:"It looks so professional. There’s even a logo. Go for it!",hi:"कितना प्रोफ़ेशनल दिखता है। लोगो भी है। कर डालो!"},{en:"Hurry, hurry! Don’t miss out!",hi:"जल्दी, जल्दी! मौका मत गँवाओ!"}];
+const WRONG_BY={
+ call:{en:"Bank and broker people call all the time. Just do what he says, quickly!",hi:"बैंक और ब्रोकर वाले तो रोज़ कॉल करते हैं। जो कहे, जल्दी कर दो!"},
+ sms:{en:"The sender looks official. Just tap the link!",hi:"भेजने वाला आधिकारिक लगता है। बस लिंक दबा दो!"},
+ video:{en:"A famous face wouldn’t lie. Open it!",hi:"मशहूर चेहरा झूठ नहीं बोलेगा। खोल दो!"},
+ nuh:{en:"An army man! Very trustworthy. Pay and get the bike!",hi:"फ़ौजी है! बहुत भरोसेमंद। पैसे दो और बाइक लो!"},
+ jobfee:{en:"A real company! Pay the small fee and start!",hi:"असली कंपनी है! छोटी-सी फ़ीस दो और शुरू करो!"},
+ task:{en:"Easy money for likes! Pay and unlock!",hi:"लाइक करके आसान कमाई! पैसे दो और खोलो!"},
+ refund:{en:"Free refund money! Send your UPI ID fast!",hi:"रिफ़ंड का पैसा! जल्दी UPI ID भेजो!"},
+ mentor:{en:"Such a friendly group. Install the app!",hi:"कितना अच्छा ग्रुप है। ऐप इंस्टॉल कर लो!"},
+ womenclub:{en:"Only women, so it must be safe. Join!",hi:"सिर्फ़ महिलाएँ हैं, तो सुरक्षित ही होगा। जुड़ जाओ!"}};
+function wrongHint(c){return c.kind==='scam'?(WRONG_BY[c.id]||WRONG_BY[c.app]||pick(WRONG_SCAM)):pick(WRONG_LEGIT)}
 const WRONG_LEGIT=[{en:"An unknown message? Must be a scam. Ignore it!",hi:"अनजान मैसेज? ज़रूर स्कैम है। अनदेखा करो!"},{en:"Every message is a scam these days. Block it!",hi:"आजकल हर मैसेज स्कैम होता है। ब्लॉक करो!"}];
 
 /* ---------- audio: chiptune + sfx ---------- */
@@ -871,7 +964,7 @@ let npc=null;
 function newGame(n){n=n||1;const lv=LEVELS[n],P=prog(),route=lv.route.slice(),sched=buildSched(n);
   const total=sched.reduce((s,l)=>s+l.length,0),wrong=new Set(shuffle([...Array(total).keys()]).slice(0,lv.wrongN)),start=n===1?1000:Math.max(300,P.carry[n]||1000);
   G={level:n,lv,route,nLegs:route.length-1,leg:0,sched,legEnc:0,wrong,encN:0,coins:start,shown:start,gullak:0,streak:0,points:0,clock:6*60,baseSpeed:96+lv.speedAdd,speedMul:1,dist:0,legStart:0,
-     stats:{scams:0,spotted:0,lost:0,verified:0,enc:0,encV:0,expired:0,flags:[],yn:0,ynOk:0,ynNet:0,good:0,mithu:0},ts:1,tsT:1,arriveT:0};
+     stats:{scams:0,spotted:0,lost:0,verified:0,enc:0,encV:0,expired:0,flags:[],yn:0,ynOk:0,ynNet:0,good:0,mithu:0,sharp:0},ts:1,tsT:1,arriveT:0};
   G.target=6*60+G.nLegs*LEG_MIN+20;
   resetWorld(TOWNS[route[1]].theme,false);
   W.weather='clear';
@@ -908,7 +1001,7 @@ function genLayers(prefill){const th=THEMES[W.theme];
 function spawnObstacles(){
   if(!G)return attractObs();
   while(W.nextObs<W.camX+VW+40){const x=W.nextObs;const d=x-HX-G.legStart;let ok=d>120&&d<LEG_LEN-460&&!stationAt(x)&&!stationAt(x+30);for(const e of G.sched[G.leg])if(Math.abs(d-e.p*LEG_LEN)<170)ok=false;
-    if(ok)placeObstacle(x);else if(rnd()<.5)coinLine(x,GY-9);
+    if(ok&&!SENIOR)placeObstacle(x);else if(ok||rnd()<.5)coinLine(x,GY-9);
     W.nextObs+=Math.max(120,rr(150,300)-G.leg*14)}}
 function attractObs(){while(W.nextObs<W.camX+VW+40){const x=W.nextObs;placeObstacle(x);W.nextObs+=rr(170,300)}}
 function placeObstacle(x){const kinds=['cow','dog','bags','trolley','hole','dog','bags'];const k=pick(kinds);let o;if(k==='hole')o={x,k,w:16,h:3};else{const s=OBS[k];o={x,k,s,w:s.w,h:s.h}}W.obs.push(o);
@@ -967,7 +1060,8 @@ function doJump(silent){
   hero.buf=.12;return false}
 function updateRun(wdt,dt){
   const rem=LEG_LEN-G.dist;
-  let v=(G.baseSpeed+G.leg*9+Math.min(12,G.dist/LEG_LEN*12))*G.speedMul;
+  let v=(G.baseSpeed+G.leg*9+Math.min(12,G.dist/LEG_LEN*12))*G.speedMul*(SENIOR?.85:1);
+  if(SENIOR&&state==='run'&&hero.ground){const ah=W.obs.find(o=>o.x>heroWX()-4&&o.x-heroWX()<(o.k==='trolley'?40:30));if(ah)doJump(true)}
   if(state==='arrive'||rem<260)v=Math.min(v,Math.sqrt(2*150*Math.max(0,rem))+(rem>1?6:0));
   if(state==='end')v=0;
   G.speedMul+=(1-G.speedMul)*Math.min(1,dt*1.4);
@@ -1004,8 +1098,8 @@ function banner(){const a=TOWNS[G.route[G.leg]].en,b=TOWNS[G.route[G.leg+1]].en;
 /* ---------- encounters ---------- */
 function startEncounter(slot){
   const card=cardById(slot.c),idx=G.encN++;G.stats.enc++;if(card.kind!=='yn')G.stats.encV++;if(card.kind==='scam')G.stats.scams++;
-  const wrong=G.wrong.has(idx),cdv=card.cd?Math.round(card.cd*G.lv.cdMul):0;
-  E={card,idx,phase:'intro',t:0,verified:false,wrong,hint:card.kind==='yn'?(wrong?card.hintWrong:card.hintRight):wrong?pick(card.kind==='scam'?WRONG_SCAM:WRONG_LEGIT):card.right,cd:cdv,cdLeft:cdv,lastTick:0,vt:0,shown:0};
+  const wrong=G.wrong.has(idx),cdv=card.cd?Math.round(card.cd*G.lv.cdMul*(SENIOR?1.6:1)):0;
+  E={card,idx,phase:'intro',t:0,verified:false,wrong,hint:card.kind==='yn'?(wrong?card.hintWrong:card.hintRight):wrong?wrongHint(card):card.right,cd:cdv,cdLeft:cdv,lastTick:0,vt:0,shown:0};
   state='encounter';G.tsT=.12;duck(true);SFX.buzz();vibrate([70,50,70]);setTimeout(()=>SFX.squawk(),500);
   W.obs=W.obs.filter(o=>o.x<heroWX()-24);
   npc={type:card.npc,x:VW+12,tx:HX+(VW<VH?42:64),st:'enter',t:0,reveal:false,stamp:0,alpha:1};
@@ -1031,8 +1125,9 @@ function resolve(action){
   if(!E||E.phase==='outcome')return;const c=E.card;let res;
   const followedWrong=E.wrong&&((c.kind==='scam'&&action==='trust')||(c.kind==='legit'&&(action==='ignore'||action==='report'))||(c.kind==='yn'&&(action==='yes'||action==='no')&&action!==c.correct));
   if(followedWrong)G.stats.mithu++;
-  E.lost=0;E.delay=0;E.streakUp=false;E.broke=false;
+  E.lost=0;E.delay=0;E.streakUp=false;E.broke=false;E.sharp=false;
   E.act=action;E.dc=0;
+  const sharp=()=>{if(!E.verified){G.points++;G.stats.sharp++;E.sharp=true}};
   if(c.kind==='yn'){
     if(action==='expire'){res='ynSkip';npc.st='leave';npc.t=0;SFX.pop()}
     else{const ok=action===c.correct,o=c[action];G.stats.yn++;E.dc=o.coins;G.coins=Math.max(0,G.coins+o.coins);G.stats.ynNet+=o.coins;
@@ -1043,13 +1138,13 @@ function resolve(action){
   }else if(c.kind==='scam'){
     if(action==='trust'){res='lost';const loss=Math.max(40,Math.round(G.coins*c.loss));E.lost=loss;E.delay=c.delay;G.coins=Math.max(0,G.coins-loss);G.stats.lost+=loss;G.clock+=c.delay;if(G.streak>0)E.broke=true;G.streak=0;
       SFX.bad();vibrate([120,60,120]);W.shake=RM?0:4;npc.st='grab';npc.t=0;flyCoins(loss);floatText('-'+loss,'#ff5d73',HX,hero.y-34);floatText('+'+c.delay+' MIN','#ffb3bf',HX,hero.y-26)}
-    else if(action==='report'){res='caught';G.stats.spotted++;G.streak++;G.points++;E.streakUp=true;SFX.stamp();setTimeout(()=>SFX.good(),250);npc.st='caught';npc.t=0;burst(HX,hero.y-10,14,['#3fd0b6','#b7fff1','#ffffff'],60);floatText('+1 SAFE','#3fd0b6',HX,hero.y-34)}
+    else if(action==='report'){res='caught';G.stats.spotted++;G.streak++;G.points++;E.streakUp=true;sharp();SFX.stamp();setTimeout(()=>SFX.good(),250);npc.st='caught';npc.t=0;burst(HX,hero.y-10,14,['#3fd0b6','#b7fff1','#ffffff'],60);floatText(E.sharp?'+2 SAFE':'+1 SAFE','#3fd0b6',HX,hero.y-34)}
     else if(action==='expire'){res='expired';G.stats.spotted++;G.stats.expired++;npc.st='revealLeave';npc.t=0;SFX.pop()}
-    else {res='ignored';G.stats.spotted++;npc.st='revealLeave';npc.t=0;SFX.pop()}
+    else {res='ignored';G.stats.spotted++;G.streak++;G.points++;E.streakUp=true;sharp();npc.st='revealLeave';npc.t=0;SFX.good();floatText(E.sharp?'+2 SAFE':'+1 SAFE','#3fd0b6',HX,hero.y-34)}
     if(res!=='caught')G.stats.flags.push(c.id);else G.stats.flags.push(c.id);
   }else{
-    if(action==='trust'){res=E.verified?'legitOk':'lucky';if(E.verified){G.streak++;G.points++;E.streakUp=true;floatText('+1 SAFE','#3fd0b6',HX,hero.y-34)}if(c.gullak){const m=Math.min(G.coins,c.gullak);G.coins-=m;G.gullak+=m;floatText('GULLAK +'+m,'#9ff0df',HX,hero.y-26)}SFX.good();npc.st='wave';npc.t=0}
-    else {res='missed';npc.st='leave';npc.t=0;SFX.pop()}
+    if(action==='trust'){res=E.verified?'legitOk':'lucky';G.streak++;G.points++;E.streakUp=true;sharp();floatText(E.sharp?'+2 SAFE':'+1 SAFE','#3fd0b6',HX,hero.y-34);if(c.bonus){G.coins+=c.bonus;E.dc=c.bonus}if(c.gullak){const m=Math.min(G.coins,c.gullak);G.coins-=m;G.gullak+=m;floatText('GULLAK +'+m,'#9ff0df',HX,hero.y-26)}SFX.good();npc.st='wave';npc.t=0}
+    else {res='missed';if(G.streak>0)E.broke=true;G.streak=0;npc.st='leave';npc.t=0;SFX.pop()}
   }
   if((c.kind==='scam'&&res!=='lost')||(c.kind==='legit'&&(res==='legitOk'||res==='lucky'))||res==='ynOk')G.stats.good++;
   E.res=res;E.phase='outcome';renderPhone();
@@ -1248,7 +1343,7 @@ function renderPhone(){if(!E)return;const c=E.card,app=APPS[c.app];let h=`<div c
   if(E.phase==='msg'){
     if(E.cd>0)h+=`<div class="urg"><span>${esc(T(c.kind==='yn'?'decideIn':'offer'))}</span><b id="cd">${Math.max(0,Math.ceil(E.cdLeft))}s</b><i><em id="cdbar" style="width:${Math.max(0,E.cdLeft/E.cd*100)}%"></em></i></div>`;
     h+=`<div class="mithu"><img src="${MITHU_URL}" alt=""><p><small>${esc(T('mithu'))}</small>${esc(tx(E.hint))}</p></div>`;
-    h+=c.kind==='yn'?`<div class="acts"><div class="two"><button class="btn safe" data-act="yes" data-focus>${esc(tx(Y))}</button><button class="btn" data-act="no">${esc(tx(N))}</button></div></div>`:`<div class="acts"><button class="btn safe${G.stats.verified===0&&E.idx===0?' pulse':''}" data-act="verify" data-focus>${ICON.shield}${esc(T('verify'))}</button><div class="two"><button class="btn" data-act="trust">${esc(tx(c.cta))}</button><button class="btn ghost" data-act="ignore">${esc(T('ignore'))}</button></div><p class="muted" style="font-size:13px;margin:0;text-align:center">${esc(T('verifyCost'))}</p></div>`;
+    h+=c.kind==='yn'?`<div class="acts"><div class="two"><button class="btn safe" data-act="yes" data-focus>${esc(tx(Y))}</button><button class="btn" data-act="no">${esc(tx(N))}</button></div></div>`:`<div class="acts"><button class="btn safe${G.stats.verified===0&&E.idx===0?' pulse':''}" data-act="verify" data-focus>${ICON.shield}${esc(T('verify'))}</button><div class="three"><button class="btn" data-act="trust">${esc(tx(c.cta))}</button><button class="btn ghost" data-act="ignore">${esc(T('ignore'))}</button><button class="btn ghost" data-act="report">${esc(T('reportShort'))}</button></div><p class="muted" style="font-size:13px;margin:0;text-align:center">${esc(T('verifyCost'))}</p></div>`;
   }else if(E.phase==='verify'||E.phase==='result'){
     h+=`<ul class="checks">`;c.checks.forEach((ck,i)=>{const done=E.phase==='result'||i<E.shown;const ok=!!ck[2];h+=`<li><span class="st ${done?(ok?'ok':'bad'):'scan'}">${done?(ok?'✓':'✕'):'?'}</span><div><b>${esc(tx(CK[ck[0]]))}</b><span>${done?esc(tx(ck[1])):esc(T('checking'))}</span></div></li>`});h+=`</ul>`;
     if(E.phase==='result')h+=`<div class="acts two" style="display:grid;grid-template-columns:1fr 1fr;gap:9px"><button class="btn safe" data-act="report" data-focus>${esc(T('report'))}</button><button class="btn" data-act="trust">${esc(tx(c.cta))}</button></div>`;
@@ -1256,7 +1351,7 @@ function renderPhone(){if(!E)return;const c=E.card,app=APPS[c.app];let h=`<div c
   h+=`</div></div>`;const first=!E.rendered;E.rendered=true;showPanel(h,null,!first)}
 function outcomeHTML(){const c=E.card,r=E.res;const V={lost:['bad',T('vLost'),ICON.cross],caught:['good',T('vCaught'),ICON.shield],ignored:['mid',T('vIgnored'),ICON.info],expired:['mid',T('vExpired'),ICON.info],legitOk:['good',T('vLegitOk'),ICON.shield],lucky:['mid',T('vLucky'),ICON.info],missed:['mid',T('vMissed'),ICON.info],ynOk:['good',T('vYnOk'),ICON.shield],ynBad:['bad',T('vYnBad'),ICON.cross],ynSkip:['mid',T('vYnSkip'),ICON.info]}[r];
   let h=`<div class="verdict ${V[0]}" role="status">${V[2]}<span>${esc(V[1])}</span></div>`;
-  const chips=[];if(E.dc)chips.push(`<span class="chip ${E.dc>0?'pos':'neg'}">${E.dc>0?'+':'−'}${fmtN(Math.abs(E.dc))} ${esc(T('coins'))}</span>`);if(E.lost)chips.push(`<span class="chip neg">−${fmtN(E.lost)} ${esc(T('coins'))}</span>`);if(E.delay)chips.push(`<span class="chip neg">+${E.delay} ${esc(T('min'))}</span>`);if(E.streakUp)chips.push(`<span class="chip pos">${esc(T(c.kind==='yn'?'correctPlus':'streakPlus'))}</span>`);if(c.gullak&&r!=='missed')chips.push(`<span class="chip pos">Gullak +${c.gullak}</span>`);
+  const chips=[];if(E.dc)chips.push(`<span class="chip ${E.dc>0?'pos':'neg'}">${E.dc>0?'+':'−'}${fmtN(Math.abs(E.dc))} ${esc(T('coins'))}</span>`);if(E.lost)chips.push(`<span class="chip neg">−${fmtN(E.lost)} ${esc(T('coins'))}</span>`);if(E.delay)chips.push(`<span class="chip neg">+${E.delay} ${esc(T('min'))}</span>`);if(E.streakUp)chips.push(`<span class="chip pos">${esc(T(c.kind==='yn'?'correctPlus':'streakPlus'))}</span>`);if(E.sharp)chips.push(`<span class="chip pos">${esc(T('sharpPlus'))}</span>`);if(c.gullak&&r!=='missed')chips.push(`<span class="chip pos">Gullak +${c.gullak}</span>`);
   if(chips.length)h+=`<div class="delta">${chips.join('')}</div>`;
   let note='';if(c.kind==='yn')note=r==='ynSkip'?tx(c[c.correct].text):tx(c[E.act].text);else if(r==='lost')note=tx(c.outcome)+(E.broke?' '+T('streakBroken'):'');else if(r==='caught')note=T('itWasScam')+' '+T('nCaught');else if(r==='ignored')note=T('itWasScam')+' '+T('nIgnored');else if(r==='expired')note=T('itWasScam')+' '+T('nExpired');else if(r==='legitOk')note=tx(c.outcome);else if(r==='lucky')note=tx(c.outcome)+' '+T('nLucky');else note=T('nMissed');
   h+=`<p class="note">${esc(note)}</p>`;
@@ -1264,10 +1359,11 @@ function outcomeHTML(){const c=E.card,r=E.res;const V={lost:['bad',T('vLost'),IC
   h+=`<h3>${esc(T(c.kind==='scam'?'redFlags':c.kind==='yn'?'keyPoints':'goodSigns'))}</h3><ul class="flags${c.kind==='scam'?'':' good'}">${c.flags.map(f=>`<li>${esc(tx(f))}</li>`).join('')}</ul>`;
   if(c.kind==='yn')h+=`<p class="real"><b>${esc(tx(c.fact))}</b></p>`;
   if(c.city)h+=`<p class="real"><b>${esc(LANG==='hi'?TOWNS[c.city].hi:nice(TOWNS[c.city].en))}:</b> ${esc(tx(TOWNS[c.city].rep))}. ${esc(tx(CITYNOTE))}</p>`;
+  if(c.kind==='scam'){const tl=[...new Set(c.checks.map(k=>k[0]).filter(k=>REALTOOL[k]))].map(k=>tx(REALTOOL[k]));h+=`<p class="real"><b>${esc(T('realT'))}</b> ${esc(tl.join(' '))} ${esc(T('scoresLine'))}</p>`}
   if(r==='lost')h+=`<p class="real">${T('help')}</p>`;
   h+=`<div class="acts"><button class="btn" data-act="continue" data-focus>${esc(T('cont'))}</button></div>`;return h}
 
-function openPhone(){renderPhone()}
+function openPhone(){renderPhone();if(SENIOR&&E)speak(tx(E.card.sender)+'. '+tx(E.card.msg))}
 function openStop(){const town=TOWNS[G.route[G.leg+1]];
   const can200=G.coins>=200,can80=G.coins>=80;
   let h=`<div class="panel" role="dialog" aria-label="${esc(tx(town))}"><div class="board"><span class="hi">${esc(town.hi)}</span><span class="en">${esc(town.en)}</span></div>`;
@@ -1296,6 +1392,8 @@ function openEnd(){const sc=G.final,s=G.stats,n=G.level;const B=TOWNS[G.route[G.
   h+=`</div>`;
   const seen=[...new Set(s.flags)].map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);
   if(seen.length)h+=`<h3>${esc(T('flagsMet'))}</h3><ul class="flags">${seen.map(c=>`<li>${esc(tx(c.flags[0]))}</li>`).join('')}</ul>`;
+  h+=confHTML('conf1','conf1Q');h+=`<h3>${esc(T('codeT'))}</h3><p style="font-size:14px;margin:0">${esc(T('codeD'))}</p><p class="help" id="rescode" style="font-family:var(--f-pixel);font-size:14px;word-break:break-all;user-select:all;-webkit-user-select:all">${esc(resCode())}</p><button class="btn ghost small" data-act="copycode">${esc(T('copyCode'))}</button>`;
+  if(n===4)h+=`<h3>${esc(T('firstT'))}</h3><p class="help">${esc(T('firstD'))}</p>`;
   if(n===1||n===4)h+=`<h3>${esc(T('parivarT'))}</h3><p style="font-size:15px">${esc(T('parivarD'))}</p>${PARIVAR.map(q=>`<details class="q"><summary>${esc(tx(q.q))}</summary><p>${esc(tx(q.a))}</p></details>`).join('')}<button class="btn ghost small" data-act="copy">${esc(T('copyQ'))}</button>`;
   h+=`<p class="help">${T('help')}</p><div class="acts">${n<4?`<button class="btn" data-act="next" data-focus>${esc(T('nextLvl'))}</button>`:''}<div class="two"><button class="btn ghost" data-act="replay">${esc(T('replayL'))}</button><button class="btn ghost" data-act="map"${n===4?' data-focus':''}>${esc(T('toMap'))}</button></div></div></div>`;
   showPanel(h,'modal')}
@@ -1303,13 +1401,15 @@ function openBrief(fromTitle){
   let h=`<div class="panel" role="dialog" aria-label="${esc(T('briefT'))}"><p class="kicker">Paisa Safar · ${esc(T('how'))}</p><h2>${esc(T('briefT'))}</h2><ol class="list">${['b1','b2','b3','b4','b5'].map((k,i)=>`<li><span class="n">${i+1}</span><span>${esc(T(k))}</span></li>`).join('')}</ol>`;
   h+=`<div class="acts"><button class="btn" data-act="close" data-focus>${esc(T('close'))}</button></div></div>`;showPanel(h,'modal')}
 function openLevelIntro(n){const lv=LEVELS[n],names=lv.route.map(k=>LANG==='hi'?TOWNS[k].hi:nice(TOWNS[k].en)).join(' → ');
-  const items=[T('b2'),...lv.lines.map(tx),n===1?T('startNote'):T('carryNote',{n:fmtN(G.coins)})];
+  const items=[T('b2'),...lv.lines.map(tx),(n===1||!prog().carry[n])?T('startNote'):T('carryNote',{n:fmtN(G.coins)})];
   let h=`<div class="panel" role="dialog" aria-label="${esc(tx(lv.theme))}"><p class="kicker">${esc(T('lvIntroKick',{n}))} · ${esc(tx(lv.theme))}</p><h2>${esc(names)}</h2><p class="note">${esc(tx(lv.blurb))}</p><ol class="list">${items.map((s,i)=>`<li><span class="n">${i+1}</span><span>${esc(s)}</span></li>`).join('')}</ol>`;
   if(lv.route.some(k=>TOWNS[k].rep))h+=`<p class="real">${esc(tx(CITYNOTE))}</p>`;
   h+=`<div class="acts"><button class="btn" data-act="go" data-focus>${esc(T('go'))}</button></div></div>`;showPanel(h,'modal')}
+function confHTML(act,q){return `<div class="help" style="display:flex;flex-direction:column;gap:6px"><b>${esc(T(q))}</b><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">${[1,2,3,4,5].map(v=>`<button class="btn ghost small" data-act="${act}" data-v="${v}" aria-pressed="${store.get(act,null)===v}">${v}</button>`).join('')}</div><small style="opacity:.8">${esc(T('confScale'))}</small></div>`}
+function resCode(){const s=G.stats,c0=store.get('conf0',null),c1=store.get('conf1',null);return `PS1-L${G.level}-S${s.spotted}/${s.scams}-J${s.good}/${s.enc}-E${s.sharp}-V${s.verified}/${s.encV}-X${s.lost}-M${s.mithu}-Y${s.ynOk}/${s.yn}-C${c0??'n'}${c1??'n'}${SENIOR?'-SR':''}`}
 function openMap(){$('title-ui').hidden=true;const P=prog();
   const lock='<svg viewBox="0 0 12 12" width="22" height="22" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 5h6v6H3zM4 2h4v1h1v2H8V3H4v2H3V3h1z"/></svg>';
-  let h=`<div class="panel" role="dialog" aria-label="${esc(T('mapT'))}"><p class="kicker">Paisa Safar</p><h2>${esc(T('mapT'))}</h2><p class="muted" style="font-size:14px">${esc(T('mapSub'))}</p><div class="rmap">`;let focused=false;
+  let h=`<div class="panel" role="dialog" aria-label="${esc(T('mapT'))}"><p class="kicker">Paisa Safar</p><h2>${esc(T('mapT'))}</h2><p class="muted" style="font-size:14px">${esc(T('mapSub'))}</p>${store.get('conf0',null)==null?confHTML('conf0','conf0Q'):''}<div class="rmap">`;let focused=false;
   for(let n=1;n<=4;n++){const lv=LEVELS[n],done=!!P.done[n],cur=!done&&n<=P.unlocked,st=done?'done':cur?'cur':'lock';
     const names=lv.route.map(k=>LANG==='hi'?TOWNS[k].hi:nice(TOWNS[k].en)).join(' → ');
     const fo=(!focused&&cur)?(focused=true,' data-focus'):'';
@@ -1319,12 +1419,13 @@ function startLevel(n){audioInit();closePanel();$('title-ui').hidden=true;W.fade
 function openPause(){if(paused)return;paused=true;pauseFrom=state;state='paused';G&&(G.tsSave=G.tsT);if(AU.ac&&AU.ac.state==='running')AU.ac.suspend();
   const h=`<div class="panel" role="dialog" aria-label="${esc(T('paused'))}"><h2>${esc(T('paused'))}</h2><div class="acts"><button class="btn" data-act="resume" data-focus>${esc(T('resume'))}</button><button class="btn ghost" data-act="restart">${esc(T('restart'))}</button><button class="btn ghost" data-act="quitmap">${esc(T('quitMap'))}</button></div>
   <h3>${esc(T('language'))}</h3><div class="seg"><button class="btn ghost small" data-act="lang-en" aria-pressed="${LANG==='en'}">English</button><button class="btn ghost small" data-act="lang-hi" aria-pressed="${LANG==='hi'}">हिन्दी</button></div>
+  <button class="btn ghost small" data-act="senior" aria-pressed="${SENIOR}">${esc(T(SENIOR?'seniorOn':'seniorOff'))}</button>
   <div class="seg"><button class="btn ghost small" data-act="sound">${esc(T(AU.on?'soundOn':'soundOff'))}</button><button class="btn ghost small" data-act="crt">${esc(T('crt'))}: ${esc(T($('crt').hidden?'off':'on'))}</button></div></div>`;showPanel(h,'modal')}
 function resumeGame(){if(!paused)return;paused=false;state=pauseFrom;closePanel();if(AU.ac)AU.ac.resume();lastTs=0;if(state==='encounter'&&E)renderPhone();if(state==='run')setPause(true)}
 function setLang(l){LANG=l;store.set('lang',l);document.documentElement.lang=l==='hi'?'hi':'en';refreshTitle()}
 
 /* title screen */
-function refreshTitle(){$('t-tag').textContent=T('tag');$('b-start').textContent=T('start');$('b-how').textContent=T('how');$('b-sound').textContent=T(AU.on?'soundOn':'soundOff');$('t-fine').textContent=T('fine');$('pause-btn').setAttribute('aria-label',T('paused'))}
+function refreshTitle(){const bp=$('b-player');if(bp)bp.textContent=T(GIRL?'playerG':'playerB');const bs=$('b-senior');if(bs){bs.innerHTML=esc(T(SENIOR?'seniorOn':'seniorOff'))+'<small style="display:block;font-family:var(--f-body);font-weight:500;font-size:12px;opacity:.8">'+esc(T('seniorHint'))+'</small>';bs.setAttribute('aria-pressed',SENIOR)}$('t-tag').textContent=T('tag');$('b-start').textContent=T('start');$('b-how').textContent=T('how');$('b-sound').textContent=T(AU.on?'soundOn':'soundOff');$('t-fine').textContent=T('fine');$('pause-btn').setAttribute('aria-label',T('paused'))}
 function layoutTitle(){const L=logoLayout();const bottom=(L.y+L.h+(hiTitle?hiTitle.height+6:16))*S;document.documentElement.style.setProperty('--tui-top',Math.round(bottom+8)+'px')}
 function toTitle(){state='title';G=null;E=null;npc=null;closePanel();setPause(false);resetWorld(pick(Object.keys(THEMES)));W.weather='clear';W.titleClock=330;$('title-ui').hidden=false;refreshTitle();layoutTitle()}
 let briefSeen=false;
@@ -1340,6 +1441,10 @@ addEventListener('keydown',e=>{if(e.repeat&&e.code!=='Space')return;const k=e.co
 $('b-start').onclick=startJourney;$('b-how').onclick=()=>{audioInit();openBrief(true)};
 $('b-lang').onclick=()=>{setLang(LANG==='en'?'hi':'en')};
 $('b-sound').onclick=()=>{audioInit();setSound(!AU.on);refreshTitle()};
+$('b-senior').onclick=()=>{audioInit();setSenior(!SENIOR)};
+$('b-player').onclick=()=>{GIRL=!GIRL;store.set('girl',GIRL);buildHero();refreshTitle()};
+function setSenior(v){SENIOR=v;store.set('senior',v);document.documentElement.classList.toggle('senior',v);refreshTitle();layoutTitle()}
+document.documentElement.classList.toggle('senior',SENIOR);
 $('pause-btn').onclick=()=>{if(state==='run')openPause()};
 PW.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act;audioInit();
   if(a==='verify')doVerify();else if(a==='trust')resolve('trust');else if(a==='ignore')resolve('ignore');else if(a==='report')resolve('report');else if(a==='continue')endEncounter();
@@ -1352,7 +1457,11 @@ PW.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.
   else if(a==='restart'){const n=G.level;paused=false;closePanel();if(AU.ac)AU.ac.resume();W.fadeDir=1;W.fadeCb=()=>{newGame(n);state='run';banner();setPause(true)}}else if(a==='quitmap'){paused=false;closePanel();if(AU.ac)AU.ac.resume();toTitle();openMap()}
   else if(a==='lang-en'||a==='lang-hi'){setLang(a.slice(5));paused=false;state=pauseFrom;openPause()}
   else if(a==='sound'){setSound(!AU.on);paused=false;state=pauseFrom;openPause()}
+  else if(a==='senior'){setSenior(!SENIOR);paused=false;state=pauseFrom;openPause()}
   else if(a==='crt'){$('crt').hidden=!$('crt').hidden;store.set('crt',!$('crt').hidden);paused=false;state=pauseFrom;openPause()}
+  else if(a==='conf0'){store.set('conf0',+b.dataset.v);toast(T('confSaved'));openMap()}
+  else if(a==='conf1'){store.set('conf1',+b.dataset.v);toast(T('confSaved'));PW.querySelectorAll('[data-act=conf1]').forEach(x=>x.setAttribute('aria-pressed',x===b));const rc=$('rescode');if(rc&&G)rc.textContent=resCode()}
+  else if(a==='copycode'){const code=G?resCode():'';try{navigator.clipboard.writeText(code).then(()=>toast(T('codeCopied')),()=>toast(T('copyFail')))}catch(err){toast(T('copyFail'))}}
   else if(a==='copy'){const s=T('parivarT')+' (Paisa Safar)\n'+PARIVAR.map((q,i)=>(i+1)+'. '+tx(q.q)).join('\n');const done=()=>toast(T('copied')),fail=()=>{toast(T('copyFail'));const d=PW.querySelector('details.q');if(d){PW.querySelectorAll('details.q').forEach(x=>x.open=true)}};try{navigator.clipboard.writeText(s).then(done,fail)}catch(err){fail()}}
 });
 function toast(s){const t=document.createElement('div');t.className='toast';t.textContent=s;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
